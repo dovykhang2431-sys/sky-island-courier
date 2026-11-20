@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#0f172a">
+<meta name="description" content="Vua Sieu Thi Pho — game quan ly sieu thi pixel art, choi offline, PWA.">
+<title>Vua Siêu Thị Phố — PWA</title>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./assets/icons/icon-192.png">
+<link rel="stylesheet" href="./css/style.css">
+<link rel="stylesheet" href="./css/ui.css">
+</head>
+<body>
+<div id="offlineBanner" style="display:none">📴 Ban dang offline — game van choi duoc, tien do luu tren may.</div>
+<header id="hud">
+  <div class="hud-left">
+    <span class="logo">🏪 Vua Siêu Thị Phố</span>
+    <span id="hudDay" class="hud-pill">Ngay 1 • Chuong 1</span>
+  </div>
+  <div class="hud-mid">
+    <span id="hudCash" class="hud-pill gold">0d</span>
+    <span id="hudStars" class="hud-pill">★ 3.6</span>
+    <span id="hudCoins" class="hud-pill">🪙 0</span>
+    <span id="hudWeather" class="hud-pill">☀️ Nang</span>
+  </div>
+  <div class="hud-right">
+    <span class="hud-pill">⚡ <span id="hudStamina">100%</span></span>
+    <div class="stamina-wrap"><div id="staminaBar"></div></div>
+    <button id="btnCoffee" class="btn small" title="Pha ca phe (+the luc)">☕</button>
+    <button id="btnShipper" class="btn small" title="Don shipper">🛵 <span id="shipperBadge" style="display:none"></span></button>
+    <button id="btnSpeed" class="btn small">⏩ x1</button>
+    <button id="btnPause" class="btn small">⏸️</button>
+    <button id="btnWeather" class="btn small" title="Doi thoi tiet (1 lan/ngay)">🌤️</button>
+    <button id="btnInstall" class="btn small gold" style="display:none">📲 Cai dat app</button>
+  </div>
+</header>
+<main id="stageWrap">
+  <canvas id="gameCanvas" width="1280" height="720"></canvas>
+  <div id="hintBar">👆 Cham ke de len hang • Cham POS de tinh tien • Space = tinh tien • P = Dung</div>
+</main>
+<nav id="dock">
+  <button class="dock-btn" data-modal="stock">📦<span>Kho</span></button>
+  <button class="dock-btn" data-modal="chapters">🏆<span>Chuong</span></button>
+  <button class="dock-btn" data-modal="staff">👥<span>Nhan Vien</span></button>
+  <button class="dock-btn" data-modal="bank">🏦<span>Ngan Hang</span></button>
+  <button class="dock-btn" data-modal="missions">🎯<span>Nhiem Vu <span id="missionBadge" class="badge" style="display:none">0</span></span></button>
+  <button class="dock-btn" data-modal="settings">⚙️<span>Cai Dat</span></button>
+</nav>
+<div id="modal" class="modal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h2 id="modalTitle">Menu</h2>
+      <button id="btnCloseModal" class="btn small">✖️</button>
+    </div>
+    <div id="modalBody" class="modal-body"></div>
+  </div>
+</div>
+<div id="startScreen">
+  <div class="start-card">
+    <div class="start-logo">🏪</div>
+    <h1>VUA SIÊU THỊ PHỐ</h1>
+    <p class="tagline">Tu tap hoa hem nho thanh de che ban le — pixel art, choi offline, luu tu dong.</p>
+    <div class="start-features">
+      <span>🛒 8 san pham</span><span>👥 6 loai khach</span><span>🧑‍💼 4 nhan vien</span>
+      <span>🏆 10 chuong</span><span>🎯 Nhiem vu ngay</span><span>🏦 Vay &amp; gui tiet kiem</span>
+    </div>
+    <label class="lbl">Chon do kho</label>
+    <select id="selDifficulty">
+      <option value="de">De — khach thua, dien re</option>
+      <option value="vua" selected>Vua — can bang</option>
+      <option value="kho">Kho — khach dong, kien nhan thap</option>
+    </select>
+    <button id="btnPlay" class="btn gold big">▶️ Choi ngay</button>
+    <button id="btnContinue" class="btn big" style="display:none">💾 Tiep tuc (co save)</button>
+    <button id="btnTutorial" class="btn big">📖 Huong dan 3 buoc</button>
+    <p class="hint">WASD / mui ten de di chuyen • Space tinh tien • P dung game • Cham vao ke, POS, may ca phe de tuong tac.</p>
+  </div>
+</div>
+<div id="toast"></div>
+<script src="./js/data.js"></script>
+<script src="./js/state.js"></script>
+<script src="./js/audio.js"></script>
+<script src="./js/game.js"></script>
+<script src="./js/render.js"></script>
+<script src="./js/ui.js"></script>
+<script src="./js/main.js"></script>
+</body>
+</html>

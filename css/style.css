@@ -1,0 +1,78 @@
+/* Vua Sieu Thi Pho — PWA v7.0 | css/style.css (layout + game) */
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; height: 100%; }
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  background: #0f172a; color: #f1f5f9;
+  display: flex; flex-direction: column; height: 100dvh; overflow: hidden;
+}
+#offlineBanner { background: #f59e0b; color: #111827; text-align: center; padding: 6px; font-weight: 700; font-size: 14px; }
+#hud {
+  display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: space-between;
+  padding: 8px 10px; background: #1e293b; border-bottom: 3px solid #facc15; z-index: 5;
+}
+.hud-left, .hud-mid, .hud-right { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.logo { font-weight: 900; color: #facc15; font-size: 17px; text-shadow: 2px 2px 0 #000; letter-spacing: 0.5px; }
+.hud-pill {
+  background: #0f172a; border: 2px solid #334155; border-radius: 999px;
+  padding: 4px 10px; font-size: 14px; font-weight: 700; white-space: nowrap;
+}
+.hud-pill.gold { color: #facc15; border-color: #facc15; }
+.stamina-wrap { width: 70px; height: 10px; background: #0f172a; border: 2px solid #334155; border-radius: 999px; overflow: hidden; }
+#staminaBar { height: 100%; width: 100%; background: #4ade80; transition: width .3s; }
+#stageWrap { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; background: #020617; min-height: 0; }
+#gameCanvas {
+  width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated;
+  touch-action: manipulation; display: block; background: #111827;
+}
+#hintBar {
+  position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%);
+  background: rgba(15,23,42,.85); border: 1px solid #334155; border-radius: 999px;
+  padding: 4px 12px; font-size: 12px; white-space: nowrap; max-width: 96vw; overflow: hidden; text-overflow: ellipsis;
+  pointer-events: none;
+}
+#dock {
+  display: flex; gap: 4px; padding: 8px; background: #1e293b; border-top: 3px solid #facc15;
+  overflow-x: auto; z-index: 5;
+}
+.dock-btn {
+  flex: 1; min-width: 64px; display: flex; flex-direction: column; align-items: center; gap: 2px;
+  background: #0f172a; color: #f1f5f9; border: 2px solid #334155; border-radius: 12px;
+  padding: 8px 4px; font-size: 20px; cursor: pointer; font-family: inherit;
+}
+.dock-btn span { font-size: 12px; font-weight: 700; }
+.dock-btn:hover { transform: scale(1.05); border-color: #facc15; }
+.dock-btn:active { transform: scale(0.95); }
+.dock-btn.active { border-color: #facc15; box-shadow: 0 0 12px rgba(250,204,21,.6); color: #facc15; }
+.badge { background: #ef4444; color: #fff; border-radius: 999px; padding: 0 6px; font-size: 11px; }
+.btn {
+  background: #334155; color: #fff; border: 2px solid #475569; border-radius: 10px;
+  padding: 8px 14px; font-weight: 700; cursor: pointer; font-family: inherit; font-size: 14px;
+}
+.btn:hover { filter: brightness(1.15); }
+.btn:active { transform: scale(0.96); }
+.btn.gold { background: linear-gradient(180deg, #fde68a, #f59e0b); color: #111827; border-color: #b45309; }
+.btn.danger { background: #7f1d1d; border-color: #ef4444; }
+.btn.small { padding: 5px 9px; font-size: 13px; }
+.btn.big { display: block; width: 100%; margin-top: 10px; padding: 12px; font-size: 16px; }
+.lbl { display: block; font-weight: 700; margin: 10px 0 4px; }
+.hint { color: #94a3b8; font-size: 13px; }
+select, input[type=number], textarea {
+  background: #0f172a; color: #f1f5f9; border: 2px solid #334155; border-radius: 8px;
+  padding: 8px; font-family: inherit; font-size: 14px; width: 100%;
+}
+/* Desktop: HUD 1 hang, dock ben phai */
+@media (min-width: 900px) {
+  body { flex-direction: column; }
+  #stageWrap { max-width: 1280px; margin: 0 auto; width: 100%; aspect-ratio: 16/9; flex: none; }
+  #dock { justify-content: center; }
+  .dock-btn { flex: none; min-width: 110px; }
+}
+/* Portrait phone 390px: khong tran */
+@media (max-width: 700px) {
+  .logo { font-size: 14px; }
+  .hud-pill { font-size: 12px; padding: 3px 8px; }
+  #stageWrap { aspect-ratio: 4/3; }
+  #hintBar { font-size: 11px; bottom: 4px; }
+  .dock-btn { font-size: 17px; }
+}
