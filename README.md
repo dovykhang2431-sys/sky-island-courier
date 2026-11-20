@@ -1,4 +1,4 @@
-# Vua Siêu Thị Phố — PWA v7.0
+# Vua Siêu Thị Phố — PWA v7.1
 
 Game quản lý siêu thị pixel art, chơi offline hoàn toàn, cài được như app trên điện thoại / máy tính. Từ tạp hóa hẻm nhỏ lên đế chế bán lẻ qua 10 chương, rồi mở **Chế Độ Tự Do**.
 
@@ -45,7 +45,7 @@ Mở bằng `file://` thì game vẫn chạy, nhưng Service Worker (PWA/offline
    cd Vua-Sieu-Thi-PWA
    git init
    git add .
-   git commit -m "Vua Sieu Thi Pho PWA v7.0"
+   git commit -m "Vua Sieu Thi Pho PWA v7.1"
    git branch -M main
    git remote add origin https://github.com/<ten-ban>/vua-sieu-thi-pho.git
    git push -u origin main
@@ -65,7 +65,7 @@ sw.js                   Service worker, cache-first v7, offline fallback
 css/style.css           Layout, HUD, canvas, dock, responsive mobile/desktop
 css/ui.css              Modal, toast, màn hình bắt đầu, báo cáo P&L
 js/data.js              Sản phẩm, chương, nâng cấp, khách, nhân viên, nhiệm vụ
-js/state.js             State + save/load deep-merge, version 7.0, export/import
+js/state.js             State + save/load deep-merge, version 7.1, export/import
 js/audio.js             WebAudio tự sinh: click, tiền, level-up, nhạc nền
 js/game.js              Vòng chơi: ngày, khách, checkout, kho, shipper, sự cố, P&L
 js/render.js            Vẽ canvas 1280x720: nền, kệ, nhân vật, ánh sáng, hạt

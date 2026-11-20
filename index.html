@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
 <meta name="theme-color" content="#0f172a">
 <meta name="description" content="Vua Sieu Thi Pho — game quan ly sieu thi pixel art, choi offline, PWA.">
-<title>Vua Siêu Thị Phố — PWA</title>
+<title>Vua Siêu Thị Phố — PWA v7.1</title>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="./assets/icons/icon-192.png">
@@ -28,6 +28,9 @@
   <div class="hud-right">
     <span class="hud-pill">⚡ <span id="hudStamina">100%</span></span>
     <div class="stamina-wrap"><div id="staminaBar"></div></div>
+    <button id="btnSfx" class="btn small" title="Bat/tat am thanh hieu ung">🔊</button>
+    <button id="btnMusic" class="btn small" title="Bat/tat nhac nen">🎵</button>
+    <button id="btnHelp" class="btn small" title="Huong dan choi">❓</button>
     <button id="btnCoffee" class="btn small" title="Pha ca phe (+the luc)">☕</button>
     <button id="btnShipper" class="btn small" title="Don shipper">🛵 <span id="shipperBadge" style="display:none"></span></button>
     <button id="btnSpeed" class="btn small">⏩ x1</button>
@@ -38,7 +41,14 @@
 </header>
 <main id="stageWrap">
   <canvas id="gameCanvas" width="1280" height="720"></canvas>
-  <div id="hintBar">👆 Cham ke de len hang • Cham POS de tinh tien • Space = tinh tien • P = Dung</div>
+  <div id="hintBar">👆 Cham ke de len hang • Cham POS de tinh tien • Space = tinh tien • P = Dung • Keo joystick de di</div>
+  <div id="joystick" aria-label="Joystick di chuyen"><div id="joyKnob"></div></div>
+  <div id="dpad" aria-label="Nut mui ten di chuyen">
+    <button class="dpad-btn" data-dir="up" aria-label="Len">▲</button>
+    <button class="dpad-btn" data-dir="left" aria-label="Trai">◀</button>
+    <button class="dpad-btn" data-dir="down" aria-label="Xuong">▼</button>
+    <button class="dpad-btn" data-dir="right" aria-label="Phai">▶</button>
+  </div>
 </main>
 <nav id="dock">
   <button class="dock-btn" data-modal="stock">📦<span>Kho</span></button>
@@ -61,7 +71,7 @@
   <div class="start-card">
     <div class="start-logo">🏪</div>
     <h1>VUA SIÊU THỊ PHỐ</h1>
-    <p class="tagline">Tu tap hoa hem nho thanh de che ban le — pixel art, choi offline, luu tu dong.</p>
+    <p class="tagline">Tu tap hoa hem nho thanh de che ban le — dang di 3D de thuong, joystick ao, choi offline, luu tu dong.</p>
     <div class="start-features">
       <span>🛒 8 san pham</span><span>👥 6 loai khach</span><span>🧑‍💼 4 nhan vien</span>
       <span>🏆 10 chuong</span><span>🎯 Nhiem vu ngay</span><span>🏦 Vay &amp; gui tiet kiem</span>
@@ -76,6 +86,14 @@
     <button id="btnContinue" class="btn big" style="display:none">💾 Tiep tuc (co save)</button>
     <button id="btnTutorial" class="btn big">📖 Huong dan 3 buoc</button>
     <p class="hint">WASD / mui ten de di chuyen • Space tinh tien • P dung game • Cham vao ke, POS, may ca phe de tuong tac.</p>
+  </div>
+</div>
+<div id="confirmModal" class="modal">
+  <div class="modal-card" style="max-width:420px">
+    <div class="modal-head"><h2 id="confirmTitle">Xac nhan</h2></div>
+    <div class="modal-body"><p id="confirmText"></p>
+      <div class="row-btns"><button id="btnConfirmYes" class="btn gold">✅ Xac nhan</button><button id="btnConfirmNo" class="btn">❌ Huy</button></div>
+    </div>
   </div>
 </div>
 <div id="toast"></div>

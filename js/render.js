@@ -1,11 +1,28 @@
-/* Vua Sieu Thi Pho — PWA v7.0 | js/render.js
-   Ve pixel art bang canvas 1280x720 (khong anh base64):
-   nen theo san/tuong, ke hang, nhan vat, anh sang theo gio, bong do,
-   bob, particles (toi da 60), mua/nang/le hoi, vignette — ke thua 6.2. */
+/* Vua Sieu Thi Pho — PWA v7.1 | js/render.js
+   Ve bang sprite sheet dang di 4x2 (quan ly / thu ngan / khach), doi khung 120ms;
+   neu anh chua tai xong thi dung fallback pixel + chan gia lap.
+   Goc: ve pixel art bang canvas 1280x720, nen theo san/tuong, ke hang,
+   anh sang theo gio, bong do, particles (toi da 60), mua/nang/le hoi, vignette. */
 (function () {
   var VST = window.VST || (window.VST = {});
   var U = VST.util;
   function px(v, total) { return v / 100 * total; }
+  // --- Sprite sheet dang di (load luoi, khong block game) ---
+  var sprites = {}, spritesTried = false;
+  function loadSprites() {
+    if (spritesTried || typeof Image === 'undefined' || !VST.DATA || !VST.DATA.SPRITES) return;
+    spritesTried = true;
+    Object.keys(VST.DATA.SPRITES).forEach(function (k) {
+      var cfg = VST.DATA.SPRITES[k];
+      var img = new Image(); img.src = cfg.src; sprites[k] = img;
+      var idl = new Image(); idl.src = cfg.idle; sprites[k + '_idle'] = idl;
+    });
+  }
+  function spriteReady(img) { return !!(img && img.complete && img.naturalWidth > 0); }
+  function drawSpriteFrame(ctx, img, frame, row, x, y, w, h) {
+    try { ctx.drawImage(img, frame * 256, row * 256, 256, 256, x - w / 2, y - h, w, h); return true; }
+    catch (e) { return false; }
+  }
 
   function drawFloor(ctx, W, H, G) {
     var f = VST.DATA.FLOORS[G.floorId - 1], w = VST.DATA.WALLS[G.wallId - 1];
@@ -112,41 +129,68 @@
     }
   }
 
-  function drawPerson(ctx, W, H, c, now, isManager) {
+  function drawPerson(ctx, W, H, c, now, isManager, G) {
     var x = px(c.x, W), y = px(c.y, H);
-    var moving = c.state === 'enter' || c.state === 'leave' || (isManager && c.moving);
-    var bob = moving ? Math.sin(c.phase || now / 150) * 2.5 : Math.sin(now / 600) * 0.8;
-    var sway = moving ? Math.sin((c.phase || 0)) * 1.5 : 0;
-    // Bong
+    loadSprites();
+    var moving = !!c.moving;
+    var bob = moving ? Math.sin((c.walkTimer || 0) * 12) * 2 : Math.sin(now / 600) * 0.8;
+    // Bong chan (co lai khi dang buoc)
     ctx.fillStyle = 'rgba(0,0,0,0.28)';
     ctx.beginPath(); ctx.ellipse(x, y + 24, moving ? 16 : 19, 6, 0, 0, 6.29); ctx.fill();
-    var color = '#2563eb', skin = '#fcd9b8', shirt = '#2563eb';
-    if (!isManager && c.type) {
-      var t = VST.DATA.CUSTOMER_TYPES[c.type];
-      color = t.color; shirt = t.color;
+    // --- Duong sprite sheet that (uu tien) ---
+    var useSprite = G && G.settings && G.settings.walkAnim !== false;
+    var key = isManager ? 'manager' : 'customer';
+    var img = sprites[key];
+    if (useSprite && spriteReady(img)) {
+      var row = (c.dir === 'left') ? 1 : 0; // len/xuong dung hang phai
+      var col = moving ? (c.walkFrame || 0) : 1; // khung 1 = dung yen
+      // Sheet khach nu: khung 3 hang trai bi ve nham sang phai -> dung khung 2 thay the
+      if (key === 'customer' && row === 1 && col === 3) col = 2;
+      if (drawSpriteFrame(ctx, img, col, row, x, y + 22 + bob, 62, 62)) {
+        // Nhan / thanh kien nhan / cam xuc van ve them ben tren sprite
+        if (!isManager && c.type) {
+          var t2 = VST.DATA.CUSTOMER_TYPES[c.type];
+          ctx.font = '16px system-ui'; ctx.textAlign = 'center';
+          ctx.fillText(t2.icon, x + 24, y - 34 + bob);
+          if (c.state === 'queue' || c.state === 'browse') {
+            var pct = Math.max(0, c.patience / c.maxPatience);
+            ctx.fillStyle = '#111827'; ctx.fillRect(x - 14, y - 44 + bob, 28, 5);
+            ctx.fillStyle = pct > 0.5 ? '#4ade80' : pct > 0.25 ? '#facc15' : '#ef4444';
+            ctx.fillRect(x - 14, y - 44 + bob, 28 * pct, 5);
+          }
+          if (c.mood === 'angry') { ctx.font = '18px system-ui'; ctx.fillText('😡', x, y - 48); }
+        }
+        if (isManager) {
+          ctx.font = 'bold 12px system-ui'; ctx.textAlign = 'center'; ctx.fillStyle = '#fff';
+          ctx.fillText('QUAN LY', x, y - 42 + bob);
+        }
+        return;
+      }
     }
+    // --- Fallback pixel art + chan gia lap (khi anh chua tai / tat walkAnim) ---
+    var sway = moving ? Math.sin((c.phase || 0)) * 1.5 : 0;
+    var color = '#2563eb', skin = '#fcd9b8', shirt = '#2563eb';
+    if (!isManager && c.type) { var t = VST.DATA.CUSTOMER_TYPES[c.type]; color = t.color; shirt = t.color; }
     if (isManager) { shirt = '#dc2626'; }
-    // Than
     ctx.fillStyle = shirt; ctx.fillRect(x - 13 + sway, y - 8 + bob, 26, 26);
     ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.fillRect(x - 13 + sway, y - 8 + bob, 26, 5);
-    // Dau
     ctx.fillStyle = skin; ctx.fillRect(x - 10 + sway, y - 26 + bob, 20, 18);
     ctx.fillStyle = '#111827'; ctx.fillRect(x - 10 + sway, y - 26 + bob, 20, 5);
-    ctx.fillStyle = '#111827'; ctx.fillRect(x - 6 + sway, y - 17 + bob, 3, 3); ctx.fillRect(x + 3 + sway, y - 17 + bob, 3, 3);
-    // Chan
+    ctx.fillRect(x - 6 + sway, y - 17 + bob, 3, 3); ctx.fillRect(x + 3 + sway, y - 17 + bob, 3, 3);
+    // Chan gia lap: 2 ellipse den dao nguoc pha khi dang di
     ctx.fillStyle = '#111827';
     var step = moving ? Math.sin((c.phase || 0)) * 4 : 0;
-    ctx.fillRect(x - 10 + sway, y + 18, 7, 8 + step * 0.3);
-    ctx.fillRect(x + 3 + sway, y + 18, 7, 8 - step * 0.3);
+    ctx.beginPath(); ctx.ellipse(x - 6 + sway, y + 22 + Math.max(0, step), 5, 3.5, 0, 0, 6.29); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(x + 6 + sway, y + 22 + Math.max(0, -step), 5, 3.5, 0, 0, 6.29); ctx.fill();
     if (!isManager && c.type) {
-      var t2 = VST.DATA.CUSTOMER_TYPES[c.type];
+      var t2b = VST.DATA.CUSTOMER_TYPES[c.type];
       ctx.font = '16px system-ui'; ctx.textAlign = 'center';
-      ctx.fillText(t2.icon, x + 16, y - 26 + bob);
+      ctx.fillText(t2b.icon, x + 16, y - 26 + bob);
       if (c.state === 'queue' || c.state === 'browse') {
-        var pct = Math.max(0, c.patience / c.maxPatience);
+        var pct2 = Math.max(0, c.patience / c.maxPatience);
         ctx.fillStyle = '#111827'; ctx.fillRect(x - 14, y - 36 + bob, 28, 5);
-        ctx.fillStyle = pct > 0.5 ? '#4ade80' : pct > 0.25 ? '#facc15' : '#ef4444';
-        ctx.fillRect(x - 14, y - 36 + bob, 28 * pct, 5);
+        ctx.fillStyle = pct2 > 0.5 ? '#4ade80' : pct2 > 0.25 ? '#facc15' : '#ef4444';
+        ctx.fillRect(x - 14, y - 36 + bob, 28 * pct2, 5);
       }
       if (c.mood === 'angry') { ctx.font = '18px system-ui'; ctx.fillText('😡', x, y - 40); }
     }
@@ -255,10 +299,16 @@
       ctx.fillText('🛵 Don shipper: ' + R.shipperOrder.qty + 'x ' + VST.DATA.PRODUCT_MAP[R.shipperOrder.pid].name + ' — ' + U.fmt(R.shipperOrder.reward) + 'd (' + Math.ceil(R.shipperTimer) + 's)', W * 0.5, H * 0.05);
     }
     // Nhan vat: sap xep theo y de co chieu sau
+    // Thu ngan dung o POS khi da thue (anh idle)
+    if (G.staff && G.staff.cashier && G.staff.cashier.hired) {
+      loadSprites();
+      var cimg = sprites['cashier_idle'];
+      if (spriteReady(cimg)) { ctx.drawImage(cimg, W * 0.82 - 24, H * 0.70 - 48, 48, 48); }
+    }
     var actors = R.customers.slice();
     actors.sort(function (a, b) { return a.y - b.y; });
-    actors.forEach(function (c) { drawPerson(ctx, W, H, c, now, false); });
-    drawPerson(ctx, W, H, R.manager, now, true);
+    actors.forEach(function (c) { drawPerson(ctx, W, H, c, now, false, G); });
+    drawPerson(ctx, W, H, R.manager, now, true, G);
     drawParticles(ctx, W, H, R);
     drawLighting(ctx, W, H, G, R, now);
     // Gio + ngay tren canvas
@@ -267,5 +317,5 @@
     ctx.fillText('Ngay ' + G.day + '  •  ' + U.fmtTime(R.minuteOfDay), W - 99, 28);
   }
 
-  VST.render = { render: render, drawShelf: drawShelf, drawPerson: drawPerson };
+  VST.render = { render: render, drawShelf: drawShelf, drawPerson: drawPerson, loadSprites: loadSprites, sprites: sprites, spriteReady: spriteReady };
 })();

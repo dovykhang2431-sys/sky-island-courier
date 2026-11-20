@@ -1,10 +1,11 @@
-/* Vua Sieu Thi Pho — PWA v7.0 | js/main.js
-   Khoi tao, game loop, input (pointer/touch/keyboard), resize/DPR,
+/* Vua Sieu Thi Pho — PWA v7.1 | js/main.js
+   Khoi tao, game loop, input (phim giu / joystick / D-pad / pointer), resize/DPR,
    dang ky Service Worker, install prompt, luu khi tat tab. */
 (function () {
   var VST = window.VST || (window.VST = {});
   var canvas, ctx, lastT = 0, lastHudT = 0, lastPointer = 0;
   var deferredPrompt = null;
+  var heldKeys = {}; // phim dang giu (WASD / mui ten)
 
   function setupCanvas() {
     canvas = document.getElementById('gameCanvas');
@@ -66,29 +67,81 @@
   }
 
   function setupKeyboard() {
-    var keys = {};
     window.addEventListener('keydown', function (e) {
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) e.preventDefault();
-      keys[e.key.toLowerCase()] = true;
+      heldKeys[e.key.toLowerCase()] = true;
       var R = VST.game.R, G = VST.state.G;
       if (!R || !G) return;
-      if (e.key === ' ' ) {
-        // Space: quan ly den POS tinh tien
-        VST.game.managerGoTo(80, 76, 'pos');
-      } else if (e.key.toLowerCase() === 'p') {
-        VST.game.togglePause();
-      } else if (e.key === 'Escape') {
-        VST.ui.closeModal();
-      }
-      var m = R.manager, step = 6;
-      var dx = 0, dy = 0;
-      if (keys['w'] || keys['arrowup']) dy -= step;
-      if (keys['s'] || keys['arrowdown']) dy += step;
-      if (keys['a'] || keys['arrowleft']) dx -= step;
-      if (keys['d'] || keys['arrowright']) dx += step;
-      if (dx || dy) VST.game.managerGoTo(m.x + dx, m.y + dy, null);
+      if (e.repeat) return; // chi xu ly 1 lan cho cac phim bam 1 lan
+      if (e.key === ' ') VST.game.managerGoTo(80, 76, 'pos'); // Space: den POS tinh tien
+      else if (e.key.toLowerCase() === 'p') VST.game.togglePause();
+      else if (e.key === 'Escape') VST.ui.closeModal();
     });
-    window.addEventListener('keyup', function (e) { keys[e.key.toLowerCase()] = false; });
+    window.addEventListener('keyup', function (e) { heldKeys[e.key.toLowerCase()] = false; });
+    window.addEventListener('blur', function () { heldKeys = {}; VST.game.setMoveDir(0, 0); });
+  }
+  function heldDir() {
+    var dx = 0, dy = 0;
+    if (heldKeys['w'] || heldKeys['arrowup']) dy -= 1;
+    if (heldKeys['s'] || heldKeys['arrowdown']) dy += 1;
+    if (heldKeys['a'] || heldKeys['arrowleft']) dx -= 1;
+    if (heldKeys['d'] || heldKeys['arrowright']) dx += 1;
+    if (dx && dy) { dx *= 0.7071; dy *= 0.7071; }
+    return { x: dx, y: dy };
+  }
+  function syncControlsVisibility() {
+    var g = VST.state.G, touch = ('ontouchstart' in window) || (navigator.maxTouchPoints || 0) > 0;
+    document.body.classList.toggle('touch', !!touch);
+    document.body.classList.toggle('joystick-on', !!g && !!g.settings && g.settings.joystick !== false);
+    document.body.classList.toggle('dpad-on', !!g && !!g.settings && !!g.settings.dpad);
+  }
+  function setupControls() {
+    syncControlsVisibility();
+    // --- Joystick ao (keo vong tron o goc trai duoi) ---
+    var joy = document.getElementById('joystick'), knob = document.getElementById('joyKnob');
+    if (joy && knob) {
+      var joyId = null;
+      var joyMove = function (e) {
+        var r = joy.getBoundingClientRect();
+        var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+        var dx = (e.clientX - cx) / (r.width / 2), dy = (e.clientY - cy) / (r.height / 2);
+        var len = Math.hypot(dx, dy);
+        if (len > 1) { dx /= len; dy /= len; len = 1; }
+        knob.style.transform = 'translate(' + (dx * 36) + 'px,' + (dy * 36) + 'px)';
+        VST.game.setJoystick(dx, dy);
+      };
+      joy.addEventListener('pointerdown', function (e) { e.preventDefault(); joyId = e.pointerId; try { joy.setPointerCapture(joyId); } catch (err) {} joyMove(e); });
+      joy.addEventListener('pointermove', function (e) { if (e.pointerId === joyId) joyMove(e); });
+      var joyEnd = function (e) { if (joyId !== null && e.pointerId !== joyId) return; joyId = null; knob.style.transform = ''; VST.game.setJoystick(0, 0); };
+      joy.addEventListener('pointerup', joyEnd);
+      joy.addEventListener('pointercancel', joyEnd);
+    }
+    // --- D-pad du phong (4 nut mui ten) ---
+    var dpadDirs = {};
+    document.querySelectorAll('.dpad-btn').forEach(function (b) {
+      var dir = b.getAttribute('data-dir');
+      var apply = function () {
+        var dx = (dpadDirs['right'] ? 1 : 0) - (dpadDirs['left'] ? 1 : 0);
+        var dy = (dpadDirs['down'] ? 1 : 0) - (dpadDirs['up'] ? 1 : 0);
+        VST.game.setMoveDir(dx, dy);
+      };
+      b.addEventListener('pointerdown', function (e) { e.preventDefault(); dpadDirs[dir] = true; apply(); });
+      ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) {
+        b.addEventListener(ev, function () { dpadDirs[dir] = false; apply(); });
+      });
+    });
+    // --- Nut nhanh am thanh / nhac tren HUD ---
+    var bsfx = document.getElementById('btnSfx');
+    if (bsfx) bsfx.addEventListener('click', function () { VST.ui.toggleSetting('sfx'); });
+    var bmus = document.getElementById('btnMusic');
+    if (bmus) bmus.addEventListener('click', function () { VST.ui.toggleSetting('music'); });
+    var bhelp = document.getElementById('btnHelp');
+    if (bhelp) bhelp.addEventListener('click', function () { VST.ui.showTutorial(); });
+  }
+  function requestInstall() {
+    if (!deferredPrompt) { VST.ui.toast('Trinh duyet chua ho tro cai dat, ban co the them vao man hinh chinh thu cong (menu trinh duyet > Them vao man hinh chinh)'); return; }
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(function () { deferredPrompt = null; var bi = document.getElementById('btnInstall'); if (bi) bi.style.display = 'none'; });
   }
 
   function loop(t) {
@@ -96,6 +149,8 @@
     var dt = Math.min((t - lastT) / 1000 || 0.016, 0.1);
     lastT = t;
     if (!VST.state.G) return;
+    var hd = heldDir();
+    VST.game.setMoveDir(hd.x, hd.y);
     VST.game.updateGame(dt);
     if (ctx) {
       try { VST.render.render(ctx, VST.state.G, VST.game.R, t); } catch (e) { console.warn('[VST] render error', e); }
@@ -117,11 +172,7 @@
       if (b) b.style.display = 'inline-block';
     });
     var bi = document.getElementById('btnInstall');
-    if (bi) bi.addEventListener('click', function () {
-      if (!deferredPrompt) { VST.ui.toast('Trinh duyet chua ho tro cai dat, ban co the them vao man hinh chinh thu cong'); return; }
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then(function () { deferredPrompt = null; bi.style.display = 'none'; });
-    });
+    if (bi) bi.addEventListener('click', function () { requestInstall(); });
     window.addEventListener('online', function () { setOffline(false); });
     window.addEventListener('offline', function () { setOffline(true); });
     setOffline(!navigator.onLine);
@@ -153,9 +204,7 @@
       VST.audio.init(); VST.audio.musicStart();
     });
     var tut = document.getElementById('btnTutorial');
-    if (tut) tut.addEventListener('click', function () {
-      alert('HUONG DAN NHANH\n1. Cham vao ke hang de len hang tu kho sau.\n2. Khach tu den mua, cham POS (hoac phim Space) de tinh tien.\n3. Het hang thi vao Kho > Dat si, doi xe tai 18s.\n4. Met thi pha ca phe. Mo Kho/Chuong/Ngan hang o thanh duoi.\n5. Cuoi ngay 22:00 xem P&L roi sang ngay moi.');
-    });
+    if (tut) tut.addEventListener('click', function () { VST.ui.showTutorial(); });
   }
 
   function init() {
@@ -163,6 +212,7 @@
     VST.state.G = saved || VST.state.createInitialState('vua');
     setupCanvas();
     setupKeyboard();
+    setupControls();
     VST.ui.bind();
     setupPWA();
     setupStartScreen();
@@ -194,7 +244,7 @@
     requestAnimationFrame(loop);
   }
 
-  VST.main = { init: init };
+  VST.main = { init: init, syncControlsVisibility: syncControlsVisibility, requestInstall: requestInstall, heldDir: heldDir };
   if (typeof document !== 'undefined') {
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
     else init();

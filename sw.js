@@ -1,5 +1,5 @@
-/* Vua Sieu Thi Pho — PWA v7.0 | sw.js — cache-first, offline ve index.html */
-var CACHE = 'vua-sieu-thi-v7';
+/* Vua Sieu Thi Pho — PWA v7.1 | sw.js — cache-first, offline ve index.html */
+var CACHE = 'vua-sieu-thi-v7.1';
 var ASSETS = [
   './',
   './index.html',
@@ -15,7 +15,23 @@ var ASSETS = [
   './js/main.js',
   './assets/favicon.svg',
   './assets/icons/icon-192.png',
-  './assets/icons/icon-512.png'
+  './assets/icons/icon-512.png',
+  './assets/sprites/walk-manager.png',
+  './assets/sprites/walk-cashier.png',
+  './assets/sprites/walk-customer1.png',
+  './assets/sprites/walk-idle-manager.png',
+  './assets/sprites/walk-idle-cashier.png',
+  './assets/sprites/walk-idle-customer1.png',
+  './assets/img/bg-store.jpg',
+  './assets/img/icon-apple.png',
+  './assets/img/icon-banana.png',
+  './assets/img/icon-carrot.png',
+  './assets/img/icon-milk.png',
+  './assets/img/icon-bread.png',
+  './assets/img/icon-snack.png',
+  './assets/img/shelf-groceries.jpg',
+  './assets/img/stall-fruit.jpg',
+  './assets/img/counter-pos.jpg'
 ];
 self.addEventListener('install', function (e) {
   e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(ASSETS); }).then(function () { return self.skipWaiting(); }));

@@ -1,11 +1,11 @@
-/* Vua Sieu Thi Pho — PWA v7.0 | js/state.js
+/* Vua Sieu Thi Pho — PWA v7.1 | js/state.js
    State ben vung + save/load an toan (deep-merge, validate, version).
    Ke thua fix 6.1: khong dung Object.assign nong, save thieu truong long
    nhau thi dien mac dinh, frostTimer NaN thi sua ve 25. */
 (function () {
   var VST = window.VST || (window.VST = {});
   var SAVE_KEY = 'vua-sieu-thi-pwa-v7';
-  var SAVE_VERSION = '7.0';
+  var SAVE_VERSION = '7.1'; // SAVE_KEY giu 'vua-sieu-thi-pwa-v7' de doc save 7.0
 
   function isNum(v) { return typeof v === 'number' && isFinite(v); }
   function num(v, d) { return isNum(v) ? v : d; }
@@ -37,7 +37,7 @@
       totalStats: { served: 0, revenue: 0, days: 0 },
       events: { fridgeFrost: false, frostTimer: 0, spill: false, spillTimer: 0, blackout: false, blackoutTimer: 0, flashSale: false, flashTimer: 0 },
       truck: { stage: 0, timer: 0, order: null },
-      settings: { music: true, sfx: true, particles: true, showTutorial: true },
+      settings: { music: true, sfx: true, particles: true, showTutorial: true, joystick: true, dpad: false, walkAnim: true },
       tutorialSeen: false, createdAt: Date.now()
     };
   }
@@ -100,6 +100,9 @@
     G.settings.music = G.settings.music !== false;
     G.settings.sfx = G.settings.sfx !== false;
     G.settings.particles = G.settings.particles !== false;
+    G.settings.joystick = G.settings.joystick !== false;
+    G.settings.dpad = !!G.settings.dpad;
+    G.settings.walkAnim = G.settings.walkAnim !== false;
     if (!Array.isArray(G.missions)) G.missions = [];
     if (!Array.isArray(G.missionsDone)) G.missionsDone = [];
     if (!Array.isArray(G.achievements)) G.achievements = [];

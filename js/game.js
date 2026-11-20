@@ -1,4 +1,4 @@
-/* Vua Sieu Thi Pho — PWA v7.0 | js/game.js
+/* Vua Sieu Thi Pho — PWA v7.1 | js/game.js
    Vong choi: ngay 7:00-22:00, khach, checkout, len ke, dat si, shipper,
    ca phe, su co, thoi tiet, sao, tien dien, cuoi ngay P&L.
    Ke thua fix 6.1: pause khi mo modal, checkout het hang doi o POS,
@@ -15,7 +15,8 @@
   function resetRunState() {
     R = {
       minuteOfDay: 420, paused: false, openModal: null,
-      manager: { x: 35, y: 40, tx: 35, ty: 40, moving: false, targetAction: null, targetPid: null, face: 1 },
+      manager: { x: 35, y: 40, tx: 35, ty: 40, moving: false, targetAction: null, targetPid: null, face: 1, dir: 'right', walkTimer: 0, walkFrame: 1, moveDir: { x: 0, y: 0 } },
+      joy: { active: false, dx: 0, dy: 0 },
       customers: [], floatTexts: [], particles: [],
       spawnTimer: 2, eventTimer: 35, cashierTimer: 0, stockerTimer: 8, cleanerTimer: 0,
       shipperOrder: null, shipperTimer: 0,
@@ -71,7 +72,7 @@
       id: R.custId++, type: typeKey, x: 50, y: 92, tx: 50, ty: 92,
       state: 'enter', patience: patience, maxPatience: patience,
       basket: [], targetShelf: null, waitTimer: U.rand(3, 6), phase: Math.random() * 6.28,
-      speed: 9 * t.speed, spent: 0, mood: 'ok'
+      speed: 9 * t.speed, spent: 0, mood: 'ok', dir: 'right', walkTimer: Math.random() * 0.4, walkFrame: 1, moving: false
     };
     // Chon ke: tre em chi keo/snack, con lai ngau nhien 1-2 ke
     var pool = typeKey === 'kid' ? ['candy', 'snack'] : VST.DATA.PRODUCTS.map(function (p) { return p.id; });
@@ -83,13 +84,42 @@
     var s = data().SHELVES.find(function (x) { return x.productId === pid; });
     return s || { x: 50, y: 40, w: 18, h: 15 };
   }
+  function hitsShelf(x, y) {
+    var d = data(); if (!d || !d.SHELVES) return false;
+    for (var i = 0; i < d.SHELVES.length; i++) {
+      var s = d.SHELVES[i];
+      if (x > s.x - 1.5 && x < s.x + s.w + 1.5 && y > s.y - 1.5 && y < s.y + s.h + 1.5) return true;
+    }
+    return false;
+  }
   function moveToward(c, tx, ty, speed, dt) {
     var dx = tx - c.x, dy = ty - c.y, dist = Math.sqrt(dx * dx + dy * dy);
     if (dist < 0.6) { c.x = tx; c.y = ty; return true; }
     var step = speed * dt;
-    if (step >= dist) { c.x = tx; c.y = ty; return true; }
-    c.x += dx / dist * step; c.y += dy / dist * step;
+    if (step >= dist) {
+      if (!hitsShelf(tx, ty)) { c.x = tx; c.y = ty; return true; }
+      // Dich den nam trong ke: dung ngay truoc ke
+      return false;
+    }
+    var nx = c.x + dx / dist * step, ny = c.y + dy / dist * step;
+    if (!hitsShelf(nx, ny)) { c.x = nx; c.y = ny; return false; }
+    // Truot doc canh ke: thu di rieng theo truc X roi truc Y
+    if (!hitsShelf(nx, c.y)) { c.x = nx; return false; }
+    if (!hitsShelf(c.x, ny)) { c.y = ny; return false; }
     return false;
+  }
+  function updateWalk(c, dt, moving, dx, dy) {
+    if (Math.abs(dx) > Math.abs(dy)) c.dir = dx >= 0 ? 'right' : 'left';
+    else if (dy !== 0) c.dir = dy > 0 ? 'down' : 'up';
+    c.moving = !!moving;
+    if (moving) { c.walkTimer += dt; c.walkFrame = Math.floor(c.walkTimer * 1000 / 120) % 4; }
+    else { c.walkFrame = 1; }
+  }
+  function managerSpeed() {
+    var g = G();
+    var base = 16 * (1 + (g.floorId - 1) * 0.04);
+    if (g.stamina < 30) base *= 0.7; else if (g.stamina < 60) base *= 0.85;
+    return base;
   }
 
   function customerPick(c) {
@@ -547,13 +577,29 @@
       }
     }
     if (g.staff.cleaner.hired && ev.spill) { R.cleanerTimer -= dt; if (R.cleanerTimer <= 0) { clearEvent('spill'); R.cleanerTimer = 20; } }
-    // Quan ly di chuyen
+    // Quan ly di chuyen: uu tien joystick / phim giu (di lien tuc), sau do click-to-go
     var m = R.manager;
-    if (m.moving) {
-      var arrived = moveToward(m, m.tx, m.ty, 16, dt);
+    var held = { x: 0, y: 0 };
+    if (R.joy && R.joy.active) { held.x = R.joy.dx; held.y = R.joy.dy; }
+    else if (m.moveDir && (m.moveDir.x || m.moveDir.y)) { held.x = m.moveDir.x; held.y = m.moveDir.y; }
+    if (held.x || held.y) {
+      var hl = Math.hypot(held.x, held.y) || 1;
+      var hx = held.x / hl, hy = held.y / hl;
+      var ox = m.x, oy = m.y;
+      var nx2 = U.clamp(m.x + hx * managerSpeed() * dt, 4, 96), ny2 = U.clamp(m.y + hy * managerSpeed() * dt, 12, 94);
+      if (!hitsShelf(nx2, ny2)) { m.x = nx2; m.y = ny2; }
+      else if (!hitsShelf(nx2, m.y)) m.x = nx2;
+      else if (!hitsShelf(m.x, ny2)) m.y = ny2;
+      m.moving = true; m.targetAction = null; m.targetPid = null;
+      updateWalk(m, dt, true, m.x - ox, m.y - oy);
+      m.face = hx >= 0 ? 1 : -1;
+      g.stamina = U.clamp(g.stamina - dt * 1.0, 0, 100);
+    } else if (m.moving && m.clickTarget) {
+      var arrived = moveToward(m, m.tx, m.ty, managerSpeed(), dt);
+      updateWalk(m, dt, !arrived, m.tx - m.x, m.ty - m.y);
       m.face = m.tx >= m.x ? 1 : -1;
       if (arrived) {
-        m.moving = false;
+        m.moving = false; updateWalk(m, dt, false, 0, 0);
         if (m.targetAction === 'pos') checkoutAll();
         else if (m.targetAction === 'coffee') brewCoffee();
         else if (m.targetAction === 'shelf' && m.targetPid) restockShelf(m.targetPid);
@@ -561,12 +607,16 @@
         else if (m.targetAction === 'spill') clearEvent('spill');
         m.targetAction = null; m.targetPid = null;
       }
+      g.stamina = U.clamp(g.stamina + dt * 0.4, 0, 100);
+    } else {
+      updateWalk(m, dt, false, 0, 0);
+      g.stamina = U.clamp(g.stamina + dt * 0.4, 0, 100);
     }
-    g.stamina = U.clamp(g.stamina + dt * 0.4, 0, 100); // hoi phuc cham khi dung yen
     // Khach
     var blackoutSlow = ev.blackout ? 0.5 : 1;
     R.customers.forEach(function (c) {
       c.phase += dt * 6;
+      var _cx = c.x, _cy = c.y;
       c.patience -= dt;
       if (c.patience <= 0 && c.state !== 'leave') {
         c.state = 'leave'; c.tx = 50; c.ty = 92; c.mood = 'angry';
@@ -591,14 +641,26 @@
       } else if (c.state === 'leave') {
         if (moveToward(c, 50, 96, c.speed * 1.2, dt)) c.gone = true;
       }
+      updateWalk(c, dt, (c.x !== _cx || c.y !== _cy), c.x - _cx, c.y - _cy);
     });
     R.customers = R.customers.filter(function (c) { return !c.gone; });
   }
 
+  function setMoveDir(dx, dy) {
+    var m = R.manager; if (!m) return;
+    m.moveDir = { x: dx || 0, y: dy || 0 };
+    if (dx || dy) { m.moving = true; m.clickTarget = false; }
+    else { m.moving = false; m.clickTarget = false; m.targetAction = null; m.targetPid = null; }
+  }
+  function setJoystick(dx, dy) {
+    if (!R.joy) R.joy = { active: false, dx: 0, dy: 0 };
+    if (dx || dy) { R.joy.active = true; R.joy.dx = dx; R.joy.dy = dy; }
+    else { R.joy.active = false; R.joy.dx = 0; R.joy.dy = 0; }
+  }
   function managerGoTo(x, y, action, pid) {
     var m = R.manager;
     m.tx = U.clamp(x, 4, 96); m.ty = U.clamp(y, 12, 94);
-    m.moving = true; m.targetAction = action || null; m.targetPid = pid || null;
+    m.moving = true; m.clickTarget = true; m.targetAction = action || null; m.targetPid = pid || null;
   }
   function togglePause() {
     R.paused = !R.paused;
@@ -622,7 +684,9 @@
     createShipperOrder: createShipperOrder, deliverShipper: deliverShipper,
     endDay: endDay, startNextDay: startNextDay, tryUpgradeChapter: tryUpgradeChapter,
     applyBankrupt: applyBankrupt, managerGoTo: managerGoTo, togglePause: togglePause,
-    setSpeed: setSpeed, setMarkup: setMarkup, sellPrice: sellPrice, buyPrice: buyPrice,
+    setSpeed: setSpeed, setMarkup: setMarkup, setMoveDir: setMoveDir, setJoystick: setJoystick,
+    managerSpeed: managerSpeed, hitsShelf: hitsShelf, updateWalk: updateWalk,
+    sellPrice: sellPrice, buyPrice: buyPrice,
     maxCap: maxCap, appeal: appeal, burst: burst, floatText: floatText
   };
 })();

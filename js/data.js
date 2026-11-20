@@ -1,4 +1,4 @@
-/* Vua Sieu Thi Pho — PWA v7.0 | js/data.js
+/* Vua Sieu Thi Pho — PWA v7.1 | js/data.js
    Du lieu tinh: san pham, chuong, nang cap, khach, nhan vien, nhiem vu, thanh tuu.
    Khong chua logic choi. Giu lai can bang goc ban 6.1/6.2:
    - Chuong 1: targetCash 4.800.000, targetStar 3.5
@@ -145,11 +145,25 @@
     fest: { name: 'Le Hoi',  icon: '🎉', spawnMult: 1.35, desc: 'Dong khach, hong rau +10%, dien x1.1' }
   };
 
+  // Sprite sheet dang di 4 cot x 2 hang (hang 0: sang phai, hang 1: sang trai),
+  // moi khung 256x256, doi khung moi 120ms khi di, khung 1 = dung yen.
+  var SPRITES = {
+    manager:  { src: './assets/sprites/walk-manager.png',   idle: './assets/sprites/walk-idle-manager.png',   cols: 4, rows: 2, frameMs: 120 },
+    cashier:  { src: './assets/sprites/walk-cashier.png',   idle: './assets/sprites/walk-idle-cashier.png',   cols: 4, rows: 2, frameMs: 120 },
+    customer: { src: './assets/sprites/walk-customer1.png', idle: './assets/sprites/walk-idle-customer1.png', cols: 4, rows: 2, frameMs: 120 }
+  };
+  // Icon san pham (anh that, da tach nen, 256px). Mon nao chua co icon thi dung emoji.
+  var PRODUCT_ICONS = {
+    veggie: './assets/img/icon-carrot.png', fruit: './assets/img/icon-apple.png',
+    noodle: null, bread: './assets/img/icon-bread.png', milk: './assets/img/icon-milk.png',
+    drink: null, candy: './assets/img/icon-snack.png', snack: './assets/img/icon-snack.png'
+  };
+
   VST.DATA = {
     PRODUCTS: PRODUCTS, PRODUCT_MAP: PRODUCT_MAP, SHELVES: SHELVES, STATIONS: STATIONS,
     CHAPTERS: CHAPTERS, CHAPTER_MAP: CHAPTER_MAP, FLOORS: FLOORS, WALLS: WALLS,
     UPGRADES: UPGRADES, CUSTOMER_TYPES: CUSTOMER_TYPES, STAFF_TYPES: STAFF_TYPES,
     MISSION_POOL: MISSION_POOL, ACHIEVEMENTS: ACHIEVEMENTS, DIFFICULTIES: DIFFICULTIES,
-    WEATHERS: WEATHERS
+    WEATHERS: WEATHERS, SPRITES: SPRITES, PRODUCT_ICONS: PRODUCT_ICONS
   };
 })();

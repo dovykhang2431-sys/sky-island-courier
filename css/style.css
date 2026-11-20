@@ -1,4 +1,4 @@
-/* Vua Sieu Thi Pho — PWA v7.0 | css/style.css (layout + game) */
+/* Vua Sieu Thi Pho — PWA v7.1 | css/style.css (layout + game) */
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; height: 100%; }
 body {
@@ -61,6 +61,31 @@ select, input[type=number], textarea {
   background: #0f172a; color: #f1f5f9; border: 2px solid #334155; border-radius: 8px;
   padding: 8px; font-family: inherit; font-size: 14px; width: 100%;
 }
+/* Joystick ao + D-pad (chi hien tren man hinh cam ung, tuy cai dat) */
+#joystick {
+  position: absolute; left: 14px; bottom: 46px; width: 112px; height: 112px; border-radius: 50%;
+  background: rgba(15,23,42,.45); border: 2px solid #facc15; display: none; z-index: 6; touch-action: none;
+}
+body.touch.joystick-on #joystick { display: block; }
+#joyKnob {
+  position: absolute; left: 36px; top: 36px; width: 40px; height: 40px; border-radius: 50%;
+  background: linear-gradient(180deg, #fde68a, #f59e0b); border: 2px solid #b45309; box-shadow: 0 2px 8px rgba(0,0,0,.5);
+}
+#dpad {
+  position: absolute; right: 14px; bottom: 46px; display: none; z-index: 6;
+  grid-template-columns: 44px 44px 44px; grid-template-rows: 44px 44px; gap: 4px;
+}
+body.dpad-on #dpad { display: grid; }
+.dpad-btn {
+  background: rgba(15,23,42,.75); color: #facc15; border: 2px solid #facc15; border-radius: 10px;
+  font-size: 18px; cursor: pointer; touch-action: none; padding: 0;
+}
+.dpad-btn[data-dir="up"] { grid-column: 2; grid-row: 1; }
+.dpad-btn[data-dir="left"] { grid-column: 1; grid-row: 2; }
+.dpad-btn[data-dir="down"] { grid-column: 2; grid-row: 2; }
+.dpad-btn[data-dir="right"] { grid-column: 3; grid-row: 2; }
+.dpad-btn:active { background: #facc15; color: #111827; }
+.btn-toggle.on { border-color: #4ade80; color: #4ade80; }
 /* Desktop: HUD 1 hang, dock ben phai */
 @media (min-width: 900px) {
   body { flex-direction: column; }

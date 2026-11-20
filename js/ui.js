@@ -1,5 +1,6 @@
-/* Vua Sieu Thi Pho — PWA v7.0 | js/ui.js
-   HUD, bottom-nav, modal, toast, man hinh bat dau, P&L cuoi ngay. */
+/* Vua Sieu Thi Pho — PWA v7.1 | js/ui.js
+   HUD, bottom-nav, modal, toast, man hinh bat dau, P&L cuoi ngay.
+   Them: cai dat day du (joystick/D-pad/dang di), confirm modal, huong dan 3 buoc. */
 (function () {
   var VST = window.VST || (window.VST = {});
   var U = VST.util;
@@ -38,6 +39,9 @@
       mb.textContent = done;
     }
     var pauseBtn = el('btnPause'); if (pauseBtn) pauseBtn.textContent = R() && R().paused ? '▶️' : '⏸️';
+    var sfxBtn = el('btnSfx'); if (sfxBtn) sfxBtn.textContent = g.settings.sfx ? '🔊' : '🔇';
+    var musBtn = el('btnMusic'); if (musBtn) musBtn.textContent = g.settings.music ? '🎵' : '🔇';
+    var spBtn = el('btnSpeed'); if (spBtn) spBtn.textContent = '⏩ x' + g.speed;
   }
 
   function openModal(name) {
@@ -59,7 +63,7 @@
     document.querySelectorAll('.dock-btn').forEach(function (b) { b.classList.remove('active'); });
   }
   function modalTitle(n) {
-    return { stock: '📦 Kho Hang & Dat Si', chapters: '🏆 Chuong & Nang Cap', bank: '🏦 Ngan Hang', missions: '🎯 Nhiem Vu & Thanh Tuu', staff: '👥 Nhan Vien', upgrades: '⬆️ Nang Cap Cua Hang', settings: '⚙️ Cai Dat', pnl: '📊 Tong Ket Ngay', bankrupt: '💥 Pha San!' }[n] || 'Menu';
+    return { stock: '📦 Kho Hang & Dat Si', chapters: '🏆 Chuong & Nang Cap', bank: '🏦 Ngan Hang', missions: '🎯 Nhiem Vu & Thanh Tuu', staff: '👥 Nhan Vien', upgrades: '⬆️ Nang Cap Cua Hang', settings: '⚙️ Cai Dat', tutorial: '📖 Huong Dan Choi', pnl: '📊 Tong Ket Ngay', bankrupt: '💥 Pha San!' }[n] || 'Menu';
   }
 
   function bar(label, value, max, color) {
@@ -77,7 +81,8 @@
       h += '<div class="stock-list">';
       d.PRODUCTS.forEach(function (p) {
         var cap = VST.game.maxCap(p);
-        h += '<div class="stock-row"><div><b>' + p.icon + ' ' + p.full + '</b><br><small>Ke ' + g.shelfStock[p.id] + '/' + cap + ' • Kho sau ' + g.backStock[p.id] + ' • Von ' + U.fmtMoney(VST.game.buyPrice(p)) + ' • Ban ' + U.fmtMoney(VST.game.sellPrice(p)) + '</small></div>'
+        var pIcon = (d.PRODUCT_ICONS && d.PRODUCT_ICONS[p.id]) ? '<img class="product-img" src="' + d.PRODUCT_ICONS[p.id] + '" alt=""> ' : p.icon + ' ';
+        h += '<div class="stock-row"><div><b>' + pIcon + p.full + '</b><br><small>Ke ' + g.shelfStock[p.id] + '/' + cap + ' • Kho sau ' + g.backStock[p.id] + ' • Von ' + U.fmtMoney(VST.game.buyPrice(p)) + ' • Ban ' + U.fmtMoney(VST.game.sellPrice(p)) + '</small></div>'
           + '<div class="row-btns"><button class="btn small" onclick="VST.game.restockShelf(\'' + p.id + '\');VST.ui.renderModal(\'stock\')">Len ke</button>'
           + '<button class="btn small gold" onclick="VST.game.orderWholesale(\'' + p.id + '\',1);VST.ui.renderModal(\'stock\')">Dat 1 lo</button>'
           + '<button class="btn small" onclick="VST.game.orderWholesale(\'' + p.id + '\',2);VST.ui.renderModal(\'stock\')">Dat 2 lo</button></div></div>';
@@ -147,20 +152,34 @@
       h += '<div id="upg2"></div>';
       setTimeout(function () { var u = el('upg2'); if (u) u.innerHTML = upgradesHtml(); }, 0);
     } else if (name === 'settings') {
-      h += '<label class="lbl">Do kho</label><div class="row-btns">'
-        + Object.keys(d.DIFFICULTIES).map(function (k) { return '<button class="btn small' + (g.difficulty === k ? ' gold' : '') + '" onclick="VST.state.G.difficulty=\'' + k + '\';VST.state.saveGame();VST.ui.renderModal(\'settings\')">' + d.DIFFICULTIES[k].name + '</button>'; }).join('') + '</div>';
-      h += '<label class="lbl">Toc do choi</label><div class="row-btns"><button class="btn small' + (g.speed === 1 ? ' gold' : '') + '" onclick="VST.game.setSpeed(1);VST.ui.renderModal(\'settings\')">x1</button><button class="btn small' + (g.speed === 2 ? ' gold' : '') + '" onclick="VST.game.setSpeed(2);VST.ui.renderModal(\'settings\')">x2</button></div>';
-      h += '<label class="lbl">Am thanh</label><div class="row-btns">'
-        + '<button class="btn small" onclick="VST.audio.toggleMusic();VST.ui.renderModal(\'settings\')">Nhac: ' + (g.settings.music ? 'Bat' : 'Tat') + '</button>'
-        + '<button class="btn small" onclick="VST.state.G.settings.sfx=!VST.state.G.settings.sfx;VST.state.saveGame();VST.ui.renderModal(\'settings\')">Hieu ung: ' + (g.settings.sfx ? 'Bat' : 'Tat') + '</button>'
-        + '<button class="btn small" onclick="VST.state.G.settings.particles=!VST.state.G.settings.particles;VST.state.saveGame();VST.ui.renderModal(\'settings\')">Hat: ' + (g.settings.particles ? 'Bat' : 'Tat') + '</button></div>';
-      h += '<label class="lbl">Thoi tiet hom nay (1 lan/ngay)</label><div class="row-btns">'
+      var s = g.settings;
+      h += '<div class="settings-section"><h4>🎮 Do kho</h4><div class="row-btns">'
+        + Object.keys(d.DIFFICULTIES).map(function (k) { return '<button class="btn small' + (g.difficulty === k ? ' gold' : '') + '" onclick="VST.ui.setDifficulty(\'' + k + '\')">' + d.DIFFICULTIES[k].name + '</button>'; }).join('') + '</div></div>';
+      h += '<div class="settings-section"><h4>⏩ Toc do choi</h4><div class="row-btns"><button class="btn small' + (g.speed === 1 ? ' gold' : '') + '" onclick="VST.game.setSpeed(1);VST.ui.renderModal(\'settings\')">x1</button><button class="btn small' + (g.speed === 2 ? ' gold' : '') + '" onclick="VST.game.setSpeed(2);VST.ui.renderModal(\'settings\')">x2</button></div></div>';
+      h += '<div class="settings-section"><h4>🔊 Am thanh</h4><div class="row-btns">'
+        + '<button class="btn small btn-toggle' + (s.music ? ' on' : '') + '" onclick="VST.ui.toggleSetting(\'music\')">🎵 Nhac: ' + (s.music ? 'Bat' : 'Tat') + '</button>'
+        + '<button class="btn small btn-toggle' + (s.sfx ? ' on' : '') + '" onclick="VST.ui.toggleSetting(\'sfx\')">🔔 Hieu ung: ' + (s.sfx ? 'Bat' : 'Tat') + '</button>'
+        + '<button class="btn small btn-toggle' + (s.particles ? ' on' : '') + '" onclick="VST.ui.toggleSetting(\'particles\')">✨ Hat: ' + (s.particles ? 'Bat' : 'Tat') + '</button></div></div>';
+      h += '<div class="settings-section"><h4>🕹️ Dieu khien di chuyen</h4><div class="row-btns">'
+        + '<button class="btn small btn-toggle' + (s.joystick ? ' on' : '') + '" onclick="VST.ui.toggleSetting(\'joystick\')">🕹️ Joystick ao: ' + (s.joystick ? 'Bat' : 'Tat') + '</button>'
+        + '<button class="btn small btn-toggle' + (s.dpad ? ' on' : '') + '" onclick="VST.ui.toggleSetting(\'dpad\')">🔢 D-pad: ' + (s.dpad ? 'Bat' : 'Tat') + '</button>'
+        + '<button class="btn small btn-toggle' + (s.walkAnim ? ' on' : '') + '" onclick="VST.ui.toggleSetting(\'walkAnim\')">🚶 Dang di: ' + (s.walkAnim ? 'Bat' : 'Tat') + '</button></div>'
+        + '<p class="hint">Joystick chi hien tren man hinh cam ung. Tat Dang di se ve lai kieu pixel cu.</p></div>';
+      h += '<div class="settings-section"><h4>🌤️ Thoi tiet hom nay (1 lan/ngay)</h4><div class="row-btns">'
         + Object.keys(d.WEATHERS).map(function (k) { return '<button class="btn small' + (g.weather === k ? ' gold' : '') + '" onclick="VST.game.changeWeather(\'' + k + '\');VST.ui.renderModal(\'settings\')">' + d.WEATHERS[k].icon + ' ' + d.WEATHERS[k].name + '</button>'; }).join('') + '</div>'
-        + '<p class="hint">' + d.WEATHERS[g.weather].desc + ' • Da doi ' + g.weatherChangesToday + '/1 lan</p>';
-      h += '<label class="lbl">Che do</label><p>' + (g.freeMode ? 'Che Do Tu Do — khong gioi han ngay.' : 'Choi theo chuong 1-10. Pha dao chuong 10 de mo Che Do Tu Do.') + '</p>';
-      h += '<h3>Luu game</h3><div class="row-btns"><button class="btn small" onclick="VST.ui.exportSave()">Xuat save</button><button class="btn small" onclick="VST.ui.importSavePrompt()">Nhap save</button></div><textarea id="saveBox" rows="3" style="width:100%" placeholder="Save JSON hien o day..."></textarea>';
-      h += '<button class="btn danger" style="width:100%;margin-top:8px" onclick="if(confirm(\'Xoa het tien do?\')){VST.state.wipeSave();location.reload()}">🗑️ Xoa save, choi lai tu dau</button>';
-    } else if (name === 'pnl') {
+        + '<p class="hint">' + d.WEATHERS[g.weather].desc + ' • Da doi ' + g.weatherChangesToday + '/1 lan</p></div>';
+      h += '<div class="settings-section"><h4>📖 Che do & Huong dan</h4><p>' + (g.freeMode ? 'Che Do Tu Do — khong gioi han ngay.' : 'Choi theo chuong 1-10. Pha dao chuong 10 de mo Che Do Tu Do.') + '</p>'
+        + '<div class="row-btns"><button class="btn small" onclick="VST.ui.showTutorial()">📖 Huong dan 3 buoc</button>'
+        + '<button class="btn small" onclick="VST.main.requestInstall()">📲 Cai dat app PWA</button></div></div>';
+      h += '<div class="settings-section"><h4>💾 Luu game</h4><div class="row-btns"><button class="btn small gold" onclick="VST.ui.saveNow()">💾 Luu ngay</button><button class="btn small" onclick="VST.ui.exportSave()">📤 Xuat save</button><button class="btn small" onclick="VST.ui.importSavePrompt()">📥 Nhap save</button></div><textarea id="saveBox" rows="3" style="width:100%" placeholder="Save JSON hien o day..."></textarea></div>';
+      h += '<div class="settings-section"><h4>⚠️ Nguy hiem</h4><div class="row-btns"><button class="btn small" onclick="VST.ui.newGameConfirm()">🔄 Choi moi</button><button class="btn small danger" onclick="VST.ui.wipeSaveConfirm()">🗑️ Xoa save</button></div></div>';
+    } else if (name === 'tutorial') {
+      h += '<h3>Buoc 1 — Len hang cho ke</h3><p>Cham vao ke hang (hoac mo Kho) de dua hang tu kho sau len ke. Ke trong thi khach bo di, mat sao.</p>';
+      h += '<h3>Buoc 2 — Don khach & tinh tien</h3><p>Khach tu vao cua → di den ke → xep hang o POS. Cham vao POS hoac bam Space de quan ly den tinh tien. Thu ngan (neu da thue) se tu tinh.</p>';
+      h += '<h3>Buoc 3 — Mo rong & len chuong</h3><p>Het hang thi Dat si trong Kho, doi xe tai 18s. Dung tien mua san/tuong/thiet bi, vuot muc tieu tai san & sao de len chuong. Het ngay 22:00 xem P&L.</p>';
+      h += '<h3>⌨️ Phim tat</h3><table class="kbd-table"><tr><td>WASD / Mui ten</td><td>Di chuyen quan ly (giu phim)</td></tr><tr><td>Chuột / Cham</td><td>Quan ly tu di toi diem cham</td></tr><tr><td>Joystick / D-pad</td><td>Di chuyen tren dien thoai</td></tr><tr><td>Space</td><td>Den POS tinh tien</td></tr><tr><td>P</td><td>Tam dung / Tiep tuc</td></tr><tr><td>Esc</td><td>Dong menu</td></tr></table>';
+      h += '<div class="row-btns" style="margin-top:10px"><button class="btn gold" onclick="VST.ui.closeModal()">✅ Hieu roi, choi thoi!</button></div>';
+    } else if (name === 'pnl') {    } else if (name === 'pnl') {
       h = '<p class="hint">Ket thuc ngay ' + g.day + '. Bam "Sang ngay moi" de tiep tuc.</p>';
     } else if (name === 'bankrupt') {
       h = '<p>Ban da pha san! Tien mat am va tai san rong am.</p><button class="btn gold" style="width:100%" onclick="VST.game.applyBankrupt();VST.ui.closeModal()">🔄 Choi lai tu chuong hien tai (giu 2.250.000d)</button>';
@@ -237,6 +256,52 @@
     else toast('Save khong hop le');
   }
 
+  var confirmCallback = null;
+  function confirmDlg(title, text, onYes) {
+    confirmCallback = onYes;
+    var t = el('confirmTitle'), x = el('confirmText'), m = el('confirmModal');
+    if (t) t.textContent = title;
+    if (x) x.textContent = text;
+    if (m) m.classList.add('show');
+  }
+  function closeConfirm() {
+    var m = el('confirmModal'); if (m) m.classList.remove('show');
+    confirmCallback = null;
+  }
+  function toggleSetting(key) {
+    var g = G(); if (!g) return;
+    if (key === 'music') { VST.audio.toggleMusic(); }
+    else {
+      g.settings[key] = !g.settings[key];
+      if (key === 'sfx') VST.audio.sfx('click');
+    }
+    VST.state.saveGame();
+    if (key === 'joystick' || key === 'dpad') VST.main.syncControlsVisibility();
+    if (R() && R().openModal === 'settings') renderModal('settings');
+    updateHud();
+    toast({ music: 'Nhac: ' + (g.settings.music ? 'Bat' : 'Tat'), sfx: 'Am thanh: ' + (g.settings.sfx ? 'Bat' : 'Tat'), particles: 'Hieu ung hat: ' + (g.settings.particles ? 'Bat' : 'Tat'), joystick: 'Joystick ao: ' + (g.settings.joystick ? 'Bat' : 'Tat'), dpad: 'D-pad: ' + (g.settings.dpad ? 'Bat' : 'Tat'), walkAnim: 'Dang di: ' + (g.settings.walkAnim ? 'Bat' : 'Tat') }[key] || 'Da luu cai dat');
+  }
+  function setDifficulty(k) {
+    var g = G(); if (!g) return;
+    g.difficulty = k;
+    VST.state.saveGame();
+    if (R() && R().openModal === 'settings') renderModal('settings');
+    updateHud();
+    toast('Do kho: ' + (VST.DATA.DIFFICULTIES[k] || {}).name);
+  }
+  function saveNow() { VST.state.saveGame(); toast('Da luu game!'); }
+  function newGameConfirm() {
+    confirmDlg('Choi moi?', 'Tien do hien tai se bi xoa het va choi lai tu Chuong 1. Ban co chac khong?', function () {
+      VST.state.wipeSave(); location.reload();
+    });
+  }
+  function wipeSaveConfirm() {
+    confirmDlg('Xoa save?', 'Toan bo tien do, tien va thanh tich se bi xoa vinh vien. Ban co chac khong?', function () {
+      VST.state.wipeSave(); location.reload();
+    });
+  }
+  function showTutorial() { openModal('tutorial'); }
+
   function bind() {
     document.querySelectorAll('[data-modal]').forEach(function (b) {
       b.addEventListener('click', function () {
@@ -253,12 +318,21 @@
     });
     var m = el('modal');
     if (m) m.addEventListener('click', function (e) { if (e.target === m) closeModal(); });
+    var by = el('btnConfirmYes');
+    if (by) by.addEventListener('click', function () { var cb = confirmCallback; closeConfirm(); if (cb) cb(); });
+    var bn = el('btnConfirmNo');
+    if (bn) bn.addEventListener('click', function () { closeConfirm(); });
+    var cm = el('confirmModal');
+    if (cm) cm.addEventListener('click', function (e) { if (e.target === cm) closeConfirm(); });
   }
 
   VST.ui = {
     toast: toast, updateHud: updateHud, openModal: openModal, closeModal: closeModal,
     renderModal: renderModal, showEndDay: showEndDay, showBankrupt: showBankrupt,
     showStartScreen: showStartScreen, hideStartScreen: hideStartScreen,
-    exportSave: exportSave, importSavePrompt: importSavePrompt, bind: bind
+    exportSave: exportSave, importSavePrompt: importSavePrompt, bind: bind,
+    toggleSetting: toggleSetting, setDifficulty: setDifficulty, saveNow: saveNow,
+    confirmDlg: confirmDlg, closeConfirm: closeConfirm, newGameConfirm: newGameConfirm,
+    wipeSaveConfirm: wipeSaveConfirm, showTutorial: showTutorial
   };
 })();
