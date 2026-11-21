@@ -5,7 +5,7 @@
 (function () {
   var VST = window.VST || (window.VST = {});
   var SAVE_KEY = 'vua-sieu-thi-pwa-v7';
-  var SAVE_VERSION = '7.1.2'; // SAVE_KEY giu 'vua-sieu-thi-pwa-v7' de doc save 7.0/7.1
+  var SAVE_VERSION = '7.1.3'; // SAVE_KEY giu 'vua-sieu-thi-pwa-v7' de doc save 7.0/7.1
 
   function isNum(v) { return typeof v === 'number' && isFinite(v); }
   function num(v, d) { return isNum(v) ? v : d; }
@@ -19,7 +19,7 @@
       version: SAVE_VERSION,
       cash: startCash, savings: 0, coins: 0,
       loans: [], // {amount, remaining, rate}
-      stars: 3.6, day: 1, chapterId: 1, freeMode: false,
+      stars: 3.6, day: 1, minuteOfDay: 420, chapterId: 1, freeMode: false,
       difficulty: diff, speed: 1, markupPct: 30,
       weather: 'sun', weatherChangesToday: 0,
       stamina: 100,
@@ -64,6 +64,7 @@
     G.coins = num(G.coins, 0);
     G.stars = VST.util.clamp(num(G.stars, 3.6), 1, 5);
     G.day = Math.max(1, Math.floor(num(G.day, 1)));
+    G.minuteOfDay = VST.util.clamp(num(G.minuteOfDay, 420), 420, 1320); // 7:00-22:00, luu de tiep tuc dung gio sau khi tai lai
     G.chapterId = VST.util.clamp(Math.floor(num(G.chapterId, 1)), 1, 10);
     G.markupPct = VST.util.clamp(num(G.markupPct, 30), 0, 100);
     G.stamina = VST.util.clamp(num(G.stamina, 100), 0, 100);

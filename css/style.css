@@ -23,7 +23,7 @@ body {
 #stageWrap { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; background: #f3e2b8; min-height: 0; }
 #gameCanvas {
   width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated;
-  touch-action: manipulation; display: block; background: #111827;
+  touch-action: manipulation; display: block; background: #f3e2b8; /* FIX 7.1.3: phan letterbox cua canvas 16:9 tren man doc dung mau nen am thay vi den */
 }
 #hintBar {
   position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%);
@@ -97,7 +97,9 @@ body.dpad-on #dpad { display: grid; }
 @media (max-width: 700px) {
   .logo { font-size: 14px; }
   .hud-pill { font-size: 12px; padding: 3px 8px; }
-  #stageWrap { aspect-ratio: 4/3; }
+  /* FIX 7.1.3: bo aspect-ratio 4/3 — stage gian het chieu cao con lai giua HUD va dock,
+     canvas 16:9 van giu ti le (contain) nhung khoang thua dung mau nen am, khong con 2 dai den. */
+  #stageWrap { aspect-ratio: auto; }
   #hintBar { font-size: 11px; bottom: 4px; }
   /* FIX 7.1.2: 6 nut dock x min-width 64px = 384px + gap/padding > 390px
      nen nut Cai Dat bi cat mot nua o mep phai; cho nut co lai vua du 6 nut. */

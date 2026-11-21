@@ -198,7 +198,7 @@
       VST.ui.toast('Chao mung den Sieu Thi Pho! Cham vao ke de len hang, cham POS de tinh tien.');
     });
     if (cont) cont.addEventListener('click', function () {
-      VST.game.startDay();
+      VST.game.resumeDay(); // FIX 7.1.3: giu gio trong ngay da luu, khong reset ve 7:00
       VST.game.R.paused = false;
       VST.ui.hideStartScreen();
       VST.audio.init(); VST.audio.musicStart();

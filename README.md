@@ -1,4 +1,9 @@
-# Vua Siêu Thị Phố — PWA v7.1.2
+# Vua Siêu Thị Phố — PWA v7.1.3
+
+## Sửa lỗi 7.1.3 (3 lỗi nhỏ còn lại sau 7.1.2, chưa đẩy GitHub)
+- Giờ trong ngày được lưu vào save (`minuteOfDay` 420–1320): nút Tiếp tục dùng `resumeDay()` thay vì `startDay()`, nên tải lại game không còn về 7:00; ngày mới / phá sản vẫn bắt đầu 7:00. Save 7.0/7.1/7.1.2 vẫn load được (thiếu trường thì mặc định 7:00).
+- Màn dọc: bỏ `aspect-ratio: 4/3` ở `#stageWrap`, stage giãn hết chiều cao còn lại; canvas 16:9 vẫn giữ tỉ lệ nhưng khoảng thừa dùng màu nền ấm `#f3e2b8` thay cho 2 dải đen. Lưu ý thật: cảnh chơi vẫn là 16:9, chưa vẽ lại cảnh dọc.
+- Modal Kho: `.modal-head` cố định (`flex-shrink: 0`), `.modal-body` co đúng trong card (`flex: 1; min-height: 0`), mở modal luôn cuộn về đầu — món đầu không còn bị tiêu đề che.
 
 Game quản lý siêu thị pixel art, chơi offline hoàn toàn, cài được như app trên điện thoại / máy tính. Từ tạp hóa hẻm nhỏ lên đế chế bán lẻ qua 10 chương, rồi mở **Chế Độ Tự Do**.
 

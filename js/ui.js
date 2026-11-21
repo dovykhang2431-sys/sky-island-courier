@@ -51,6 +51,7 @@
     if (!m || !body) return;
     m.classList.add('show');
     renderModal(name);
+    if (body) body.scrollTop = 0; // FIX 7.1.3: mo modal luon ve dau danh sach
     if (title) title.textContent = modalTitle(name);
     // Danh dau nut dock dang mo
     document.querySelectorAll('.dock-btn').forEach(function (b) {

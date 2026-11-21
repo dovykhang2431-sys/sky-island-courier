@@ -14,7 +14,7 @@
   var R = null; // runtime volatile
   function resetRunState() {
     R = {
-      minuteOfDay: 420, paused: false, openModal: null,
+      minuteOfDay: (function () { var g = G(); return (g && isFinite(g.minuteOfDay)) ? g.minuteOfDay : 420; })(), paused: false, openModal: null,
       manager: { x: 35, y: 40, tx: 35, ty: 40, moving: false, targetAction: null, targetPid: null, face: 1, dir: 'right', walkTimer: 0, walkFrame: 1, moveDir: { x: 0, y: 0 } },
       joy: { active: false, dx: 0, dy: 0 },
       customers: [], floatTexts: [], particles: [],
@@ -422,11 +422,19 @@
   // ---- Vong ngay ----
   function startDay() {
     var g = G();
+    g.minuteOfDay = 420; // ngay moi bat dau 7:00
     resetRunState();
     genDailyMissions();
     g.weather = 'sun'; g.weatherChangesToday = 0;
     g.dayStats = { served: 0, lost: 0, revenue: 0, cogs: 0, tips: 0, restocks: 0, coffees: 0, orders: 0 };
     g.stamina = 100;
+    if (VST.ui) VST.ui.updateHud();
+  }
+  // FIX 7.1.3: nut Tiep tuc truoc day goi startDay() nen reset ca gio, nhiem vu va
+  // dayStats ve dau ngay. resumeDay() chi reset trang thai chay (khach, vi tri),
+  // giu nguyen G.minuteOfDay / nhiem vu / dayStats da luu.
+  function resumeDay() {
+    resetRunState();
     if (VST.ui) VST.ui.updateHud();
   }
   function endDay() {
@@ -505,6 +513,7 @@
     g.stars = 3.6; g.stamina = 100;
     g.events = { fridgeFrost: false, frostTimer: 0, spill: false, spillTimer: 0, blackout: false, blackoutTimer: 0, flashSale: false, flashTimer: 0 };
     g.truck = { stage: 0, timer: 0, order: null };
+    g.minuteOfDay = 420;
     resetRunState(); R.paused = false;
     toast('Pha san! Choi lai tu chuong hien tai voi 50% tien khoi diem');
     VST.state.saveGame();
@@ -528,8 +537,10 @@
     if (R.paused || R.openModal || R.gameOver) return;
     // Dong ho: 0.35s thuc = 1 phut game o toc do 1x
     R.minuteOfDay += dt / 0.35;
+    if (G()) G().minuteOfDay = R.minuteOfDay; // dong bo vao save de tai lai dung gio
     if (R.minuteOfDay >= 1320) {
       R.minuteOfDay = 1320;
+      if (G()) G().minuteOfDay = 1320;
       var stats = endDay();
       if (g.cash < 0 && VST.state.netWorth(g) < 0) {
         if (VST.ui) VST.ui.showBankrupt(stats);
@@ -686,7 +697,7 @@
   function setMarkup(p) { var g = G(); g.markupPct = U.clamp(Math.round(p), 0, 100); VST.state.saveGame(); }
 
   VST.game = {
-    R: R, resetRunState: resetRunState, newGame: newGame, startDay: startDay,
+    R: R, resetRunState: resetRunState, newGame: newGame, startDay: startDay, resumeDay: resumeDay,
     updateGame: updateGame, spawnCustomer: spawnCustomer, checkoutNextCustomer: checkoutNextCustomer,
     checkoutAll: checkoutAll, restockShelf: restockShelf, orderWholesale: orderWholesale,
     brewCoffee: brewCoffee, hireStaff: hireStaff, fireStaff: fireStaff, levelStaff: levelStaff,

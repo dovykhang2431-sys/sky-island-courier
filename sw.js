@@ -1,5 +1,5 @@
-/* Vua Sieu Thi Pho — PWA v7.1.2 | sw.js — cache-first, offline ve index.html */
-var CACHE = 'vua-sieu-thi-v7.1.2';
+/* Vua Sieu Thi Pho — PWA v7.1.3 | sw.js — cache-first, offline ve index.html */
+var CACHE = 'vua-sieu-thi-v7.1.3';
 var ASSETS = [
   './',
   './index.html',
