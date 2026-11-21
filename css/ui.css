@@ -1,19 +1,19 @@
-/* Vua Sieu Thi Pho — PWA v7.1 | css/ui.css (modal / HUD / toast / start) */
+/* Vua Sieu Thi Pho — PWA v7.1.1 | css/ui.css (modal / HUD / toast / start) */
 .modal {
-  position: fixed; inset: 0; background: rgba(2,6,23,.75); z-index: 50;
+  position: fixed; inset: 0; background: rgba(74,44,10,.55); z-index: 50;
   display: none; align-items: flex-end; justify-content: center;
 }
 .modal.show { display: flex; }
 .modal-card {
-  background: #1e293b; border: 3px solid #facc15; border-radius: 16px 16px 0 0;
+  background: #fff8e7; border: 3px solid #b45309; border-radius: 16px 16px 0 0; color:#4a2c0a;
   width: 100%; max-width: 720px; max-height: 82vh; display: flex; flex-direction: column;
-  box-shadow: 0 0 40px rgba(250,204,21,.25);
+  box-shadow: 0 0 40px rgba(180,83,9,.30);
 }
-.modal-head { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 2px solid #334155; }
-.modal-head h2 { margin: 0; color: #facc15; font-size: 19px; text-shadow: 2px 2px 0 #000; }
+.modal-head { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 2px solid #e7c48a; }
+.modal-head h2 { margin: 0; color: #92400e; font-size: 19px; text-shadow: none; }
 .modal-body { padding: 14px 16px; overflow-y: auto; }
-.modal-body h3 { color: #facc15; margin: 14px 0 6px; }
-.modal-body h4 { color: #93c5fd; margin: 12px 0 4px; }
+.modal-body h3 { color: #92400e; margin: 14px 0 6px; }
+.modal-body h4 { color: #b45309; margin: 12px 0 4px; }
 @media (min-width: 700px) {
   .modal { align-items: center; }
   .modal-card { border-radius: 16px; }
@@ -21,44 +21,45 @@
 .stock-list, .chapter-list { display: flex; flex-direction: column; gap: 8px; }
 .stock-row, .chapter-row {
   display: flex; justify-content: space-between; align-items: center; gap: 8px;
-  background: #0f172a; border: 2px solid #334155; border-radius: 10px; padding: 8px 10px;
+  background: #fff; border: 2px solid #e7c48a; border-radius: 10px; color:#4a2c0a; padding: 8px 10px;
 }
-.chapter-row.current { border-color: #facc15; background: #292524; }
+.chapter-row.current { border-color: #f59e0b; background: #ffedd5; }
 .row-btns { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
 .row-btns .btn { flex-shrink: 0; }
 .pnl-row { display: flex; align-items: center; gap: 8px; margin: 6px 0; font-size: 14px; }
 .pnl-row span { width: 90px; }
 .pnl-row b { width: 110px; text-align: right; }
-.pnl-bar { flex: 1; height: 12px; background: #0f172a; border: 1px solid #334155; border-radius: 999px; overflow: hidden; }
+.pnl-bar { flex: 1; height: 12px; background: #fff8e7; border: 1px solid #e7c48a; border-radius: 999px; overflow: hidden; }
 .pnl-bar div { height: 100%; }
 #toast {
   position: fixed; left: 50%; bottom: 86px; transform: translateX(-50%) translateY(20px);
-  background: rgba(15,23,42,.95); border: 2px solid #facc15; color: #fff;
+  background: rgba(74,44,10,.95); border: 2px solid #f59e0b; color: #fff7e6;
   padding: 10px 16px; border-radius: 999px; font-weight: 700; font-size: 14px; z-index: 80;
   opacity: 0; pointer-events: none; transition: all .25s; max-width: 92vw; text-align: center;
   box-shadow: 0 0 16px rgba(250,204,21,.4);
 }
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 #startScreen {
-  position: fixed; inset: 0; z-index: 100; background: linear-gradient(180deg, rgba(15,23,42,.88), rgba(30,58,95,.82) 60%, rgba(15,23,42,.92)), url('../assets/img/bg-store.jpg') center/cover;
+  position: fixed; inset: 0; z-index: 100; background: linear-gradient(180deg, rgba(74,44,10,.25), rgba(146,64,14,.15) 60%, rgba(74,44,10,.35)), url('../assets/img/preview-store-2.jpg') center/cover;
   display: flex; align-items: center; justify-content: center; padding: 16px; overflow-y: auto;
 }
 #startScreen.hidden { display: none; }
 .start-card {
-  background: rgba(15,23,42,.92); border: 3px solid #facc15; border-radius: 20px;
+  background: rgba(255,248,231,.96); border: 3px solid #b45309; border-radius: 20px; color:#4a2c0a;
   padding: 22px; max-width: 520px; width: 100%; text-align: center;
-  box-shadow: 0 0 50px rgba(250,204,21,.3);
+  box-shadow: 0 0 50px rgba(180,83,9,.35);
 }
 .start-logo { font-size: 56px; }
-.start-card h1 { color: #facc15; margin: 6px 0; font-size: 30px; text-shadow: 3px 3px 0 #000; letter-spacing: 1px; }
-.tagline { color: #cbd5e1; margin: 4px 0 12px; }
+.start-card h1 { color: #92400e; margin: 6px 0; font-size: 30px; text-shadow: none; letter-spacing: 1px; }
+.wood-sign { background: linear-gradient(180deg,#d97706,#92400e); color: #fff7e6 !important; padding: 10px 14px; border-radius: 14px; border: 3px solid #78350f; box-shadow: 0 4px 0 #78350f, 0 8px 18px rgba(0,0,0,.25); }
+.tagline { color: #6b4226; margin: 4px 0 12px; }
 .start-features { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 8px; }
-.start-features span { background: #0f172a; border: 1px solid #334155; border-radius: 999px; padding: 4px 10px; font-size: 13px; }
+.start-features span { background: #ffedd5; border: 1px solid #d9a05b; color:#4a2c0a; border-radius: 999px; padding: 4px 10px; font-size: 13px; }
 .start-card .lbl { text-align: left; }
 #confirmModal .modal-card { max-width: 420px; border-radius: 16px; }
 .settings-section { margin: 12px 0; }
-.settings-section h4 { color: #93c5fd; margin: 10px 0 6px; }
+.settings-section h4 { color: #b45309; margin: 10px 0 6px; }
 .kbd-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-.kbd-table td { padding: 5px 6px; border-bottom: 1px solid #334155; }
-.kbd-table td:first-child { font-weight: 700; color: #facc15; white-space: nowrap; }
+.kbd-table td { padding: 5px 6px; border-bottom: 1px solid #e7c48a; }
+.kbd-table td:first-child { font-weight: 700; color: #92400e; white-space: nowrap; }
 .product-img { width: 28px; height: 28px; vertical-align: middle; border-radius: 6px; background: #fff; }

@@ -132,7 +132,12 @@
         if (!def) return;
         var prog = VST.game.missionProgress(m);
         var met = VST.game.missionMet(m);
-        h += '<div class="stock-row"><div><b>' + def.text + '</b><br><small>Tien do: ' + (def.metric === 'starsEnd' ? prog.toFixed(1) : U.fmt(prog)) + ' / ' + (def.metric === 'starsEnd' ? def.target : U.fmt(def.target)) + ' • Thuong ' + U.fmtMoney(def.rewardCash) + ' +' + def.rewardCoins + ' xu</small></div>'
+        // FIX 7.1.2: nhiem vu 'Khong de mat khach' hien '18 / 0' trong nhu loi;
+        // hien ro la so khach da mat / toi da cho phep (0).
+        var progText = def.metric === 'starsEnd' ? prog.toFixed(1) + ' / ' + def.target
+          : def.metric === 'lostMax' ? 'Da mat ' + U.fmt(prog) + ' khach / toi da 0'
+          : U.fmt(prog) + ' / ' + U.fmt(def.target);
+        h += '<div class="stock-row"><div><b>' + def.text + '</b><br><small>Tien do: ' + progText + ' • Thuong ' + U.fmtMoney(def.rewardCash) + ' +' + def.rewardCoins + ' xu</small></div>'
           + (m.claimed ? '<span>✅ Da nhan</span>' : met ? '<button class="btn small gold" onclick="VST.game.claimMission(\'' + m.id + '\');VST.ui.renderModal(\'missions\')">Nhan</button>' : '<span>⏳</span>') + '</div>';
       });
       h += '<h3>🏆 Thanh tuu</h3>';

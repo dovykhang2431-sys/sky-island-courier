@@ -632,8 +632,16 @@
       } else if (c.state === 'browse') {
         c.waitTimer -= dt;
         if (c.waitTimer <= 0) {
-          customerPick(c);
-          c.state = 'queue'; c.tx = 88; c.ty = 68 + R.customers.filter(function (x) { return x.state === 'queue'; }).length * 3;
+          // FIX 7.1.2: ke het hang thi khach bo ve chu khong xep hang tay khong
+          // (ban cu van cho vao hang doi roi tinh tien 1 mon ma khach khong mua).
+          if (customerPick(c)) {
+            c.state = 'queue'; c.tx = 88; c.ty = 68 + R.customers.filter(function (x) { return x.state === 'queue'; }).length * 3;
+          } else {
+            c.state = 'leave'; c.tx = 50; c.ty = 92; c.mood = 'angry';
+            g.dayStats.lost++;
+            g.stars = U.clamp(g.stars - data().CUSTOMER_TYPES[c.type].starLoss, 1, 5);
+            floatText(c.x, c.y - 6, '😡', '#ef4444');
+          }
         }
       } else if (c.state === 'queue') {
         var qi = R.customers.filter(function (x) { return x.state === 'queue'; }).indexOf(c);
@@ -649,8 +657,15 @@
   function setMoveDir(dx, dy) {
     var m = R.manager; if (!m) return;
     m.moveDir = { x: dx || 0, y: dy || 0 };
-    if (dx || dy) { m.moving = true; m.clickTarget = false; }
-    else { m.moving = false; m.clickTarget = false; m.targetAction = null; m.targetPid = null; }
+    if (dx || dy) { m.moving = true; m.clickTarget = false; m.targetAction = null; m.targetPid = null; }
+    // FIX 7.1.2 — loi tinh tien: main.js loop() goi setMoveDir(0,0) moi khung
+    // hinh (khi khong giu phim). Ban cu xoa luon clickTarget/targetAction nen
+    // cham POS / cham ke / bam Space (managerGoTo) bi huy ngay lap tuc,
+    // quan ly khong bao gio di toi quai, checkoutAll() khong bao gio chay,
+    // tien khong tang va khach xep hang roi bo di gian du. Khi dung phim giu
+    // ma van con diem cham dang cho thi giu nguyen clickTarget de updateGame
+    // tiep tuc di toi do; chi dung han khi khong co diem cham nao.
+    else if (!m.clickTarget) { m.moving = false; }
   }
   function setJoystick(dx, dy) {
     if (!R.joy) R.joy = { active: false, dx: 0, dy: 0 };

@@ -1,6 +1,22 @@
-# Vua Siêu Thị Phố — PWA v7.1
+# Vua Siêu Thị Phố — PWA v7.1.2
 
 Game quản lý siêu thị pixel art, chơi offline hoàn toàn, cài được như app trên điện thoại / máy tính. Từ tạp hóa hẻm nhỏ lên đế chế bán lẻ qua 10 chương, rồi mở **Chế Độ Tự Do**.
+
+## Sửa lỗi 7.1.2 (chơi thử bản live 21/11/2026, trước khi đẩy GitHub)
+
+- **Tính tiền (lỗi nặng nhất):** vòng lặp game gọi `setMoveDir(0,0)` mỗi khung hình nên lệnh chạm POS / chạm kệ / bấm Space bị hủy ngay — quản lý không bao giờ đi tới quầy, tiền không tăng, khách xếp hàng rồi bỏ đi giận dữ. Đã sửa `js/game.js` (`setMoveDir` giữ lại điểm chạm đang chờ) — kiểm chứng bằng mô phỏng Node với file thật: quản lý đi tới POS và tính tiền 1 khách xếp hàng (tiền tăng đúng giá bán).
+- **Nút Cài Đặt bị cắt:** 6 nút dock × min-width 64px vượt quá màn hình 390px. Đã sửa `css/style.css` cho nút co lại vừa đủ 6 nút trên điện thoại dọc.
+- **Kệ hết hàng:** khách hết hàng mua vẫn xếp hàng tay không rồi bị tính tiền 1 món không mua. Giờ khách bỏ về giận dữ (mất khách, trừ sao) như khi hết kiên nhẫn.
+- **Nhiệm vụ "Không để mất khách":** hiển thị "18 / 0" trông như lỗi — giờ hiển thị "Đã mất 18 khách / tối đa 0".
+- Save 7.0/7.1 vẫn load được (cùng SAVE_KEY `vua-sieu-thi-pwa-v7`).
+- Còn biết chưa sửa: tải lại save thì giờ trong game về đầu ngày (giờ chơi không lưu trong save); trên điện thoại dọc sân chơi vẫn là dải ngang 16:9 với khoảng đen trên/dưới; món đầu trong Kho bị tiêu đề che một phần.
+
+## Visual 7.1.1 (theo ảnh xem trước 2 đã chốt)
+
+- Màn hình bắt đầu dùng ảnh `assets/img/preview-store-2.jpg` (ảnh xem trước 2, nén 1280px/227KB) làm nền, tiêu đề bảng gỗ vàng nâu, nút Bắt đầu vàng cam to tròn.
+- Tông ấm toàn game: sàn gỗ sáng, tường kem, cửa kính sáng phía sau, HUD/dock/nút gỗ nâu + vàng cam, chữ nâu đậm — bỏ tông xanh navy lạnh của 7.1.
+- Trong game: quầy rau củ tròn ở giữa sàn (ảnh `stall-fruit.jpg`), kệ 3 tầng nhiều màu hơn, quầy POS gỗ ở góc phải, nhân vật to hơn 25% (78px, vẫn sheet đi bộ 8 khung).
+- Lưu ý thật: engine vẫn là canvas 2D (không phải 3D thật như ảnh xem trước) — kệ/quầy/nhân vật vẫn vẽ/xếp trên mặt phẳng 2D, chỉ đổi góc nhìn/màu sắc/bố cục cho ấm và giống ảnh hơn. Lối chơi, số liệu, cài đặt, joystick, save giữ nguyên 7.1.
 
 ## Cách chơi
 
@@ -65,10 +81,10 @@ sw.js                   Service worker, cache-first v7, offline fallback
 css/style.css           Layout, HUD, canvas, dock, responsive mobile/desktop
 css/ui.css              Modal, toast, màn hình bắt đầu, báo cáo P&L
 js/data.js              Sản phẩm, chương, nâng cấp, khách, nhân viên, nhiệm vụ
-js/state.js             State + save/load deep-merge, version 7.1, export/import
+js/state.js             State + save/load deep-merge, version 7.1.2, export/import
 js/audio.js             WebAudio tự sinh: click, tiền, level-up, nhạc nền
 js/game.js              Vòng chơi: ngày, khách, checkout, kho, shipper, sự cố, P&L
-js/render.js            Vẽ canvas 1280x720: nền, kệ, nhân vật, ánh sáng, hạt
+js/render.js            Vẽ canvas 1280x720: nền, kệ, nhân vật, ánh sáng, hạt — 7.1.1: tông ấm, sàn gỗ, quầy rau củ giữa, nhân vật 78px
 js/ui.js                HUD, modal, toast, P&L cuối ngày, phá sản
 js/main.js              Khởi tạo, game loop, input, resize, SW, install prompt
 assets/icons/icon-192.png / icon-512.png

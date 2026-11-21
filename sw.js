@@ -1,5 +1,5 @@
-/* Vua Sieu Thi Pho — PWA v7.1 | sw.js — cache-first, offline ve index.html */
-var CACHE = 'vua-sieu-thi-v7.1';
+/* Vua Sieu Thi Pho — PWA v7.1.2 | sw.js — cache-first, offline ve index.html */
+var CACHE = 'vua-sieu-thi-v7.1.2';
 var ASSETS = [
   './',
   './index.html',
@@ -31,7 +31,8 @@ var ASSETS = [
   './assets/img/icon-snack.png',
   './assets/img/shelf-groceries.jpg',
   './assets/img/stall-fruit.jpg',
-  './assets/img/counter-pos.jpg'
+  './assets/img/counter-pos.jpg',
+  './assets/img/preview-store-2.jpg'
 ];
 self.addEventListener('install', function (e) {
   e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(ASSETS); }).then(function () { return self.skipWaiting(); }));

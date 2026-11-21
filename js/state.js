@@ -5,7 +5,7 @@
 (function () {
   var VST = window.VST || (window.VST = {});
   var SAVE_KEY = 'vua-sieu-thi-pwa-v7';
-  var SAVE_VERSION = '7.1'; // SAVE_KEY giu 'vua-sieu-thi-pwa-v7' de doc save 7.0
+  var SAVE_VERSION = '7.1.2'; // SAVE_KEY giu 'vua-sieu-thi-pwa-v7' de doc save 7.0/7.1
 
   function isNum(v) { return typeof v === 'number' && isFinite(v); }
   function num(v, d) { return isNum(v) ? v : d; }

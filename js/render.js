@@ -1,3 +1,6 @@
+/* Vua Sieu Thi Pho — PWA v7.1.1 | js/render.js
+   Visual 7.1.1: tong am (san go sang, tuong kem, den vang) theo anh xem truoc 2;
+   quai rau cu tron o giua, ke to hon nhieu mau hon, nhan vat to hon 25% (78px). Engine van 2D. */
 /* Vua Sieu Thi Pho — PWA v7.1 | js/render.js
    Ve bang sprite sheet dang di 4x2 (quan ly / thu ngan / khach), doi khung 120ms;
    neu anh chua tai xong thi dung fallback pixel + chan gia lap.
@@ -19,6 +22,14 @@
     });
   }
   function spriteReady(img) { return !!(img && img.complete && img.naturalWidth > 0); }
+  var extraImgs = {}, extraTried = false;
+  function loadExtra() {
+    if (extraTried || typeof Image === 'undefined') return;
+    extraTried = true;
+    [['stall', './assets/img/stall-fruit.jpg'], ['shelf', './assets/img/shelf-groceries.jpg'], ['counter', './assets/img/counter-pos.jpg']].forEach(function (kv) {
+      var im = new Image(); im.src = kv[1]; extraImgs[kv[0]] = im;
+    });
+  }
   function drawSpriteFrame(ctx, img, frame, row, x, y, w, h) {
     try { ctx.drawImage(img, frame * 256, row * 256, 256, 256, x - w / 2, y - h, w, h); return true; }
     catch (e) { return false; }
@@ -26,26 +37,36 @@
 
   function drawFloor(ctx, W, H, G) {
     var f = VST.DATA.FLOORS[G.floorId - 1], w = VST.DATA.WALLS[G.wallId - 1];
-    // Tuong tren
-    ctx.fillStyle = w.c1; ctx.fillRect(0, 0, W, H * 0.14);
-    ctx.fillStyle = w.c2; ctx.fillRect(0, H * 0.14, W, 6);
-    // Cua so / bang hieu tren tuong
-    ctx.fillStyle = '#0f172a';
-    ctx.fillRect(W * 0.04, H * 0.03, W * 0.2, H * 0.08);
-    ctx.fillStyle = '#facc15'; ctx.font = 'bold ' + Math.round(H * 0.045) + 'px system-ui';
-    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-    ctx.fillText('★ SIEU THI PHO ★', W * 0.05, H * 0.07);
-    // San gach
-    var tile = 64;
-    for (var y = Math.floor(H * 0.15); y < H; y += tile) {
-      for (var x = 0; x < W; x += tile) {
-        var odd = ((x / tile) + (y / tile)) % 2 === 0;
-        ctx.fillStyle = odd ? f.c1 : f.c2;
-        ctx.fillRect(x, y, tile - 2, tile - 2);
-      }
+    // Tuong kem am + vien go (anh xem truoc 2: tuong kem, tran go)
+    ctx.fillStyle = '#fdf3d8'; ctx.fillRect(0, 0, W, H * 0.14);
+    ctx.fillStyle = '#d97706'; ctx.fillRect(0, H * 0.14, W, 6);
+    ctx.fillStyle = '#92400e'; ctx.fillRect(0, H * 0.155, W, 3);
+    // Cua kinh sang o giua phia sau (nhu anh 2: cua kinh nhin ra pho)
+    var dg = ctx.createLinearGradient(0, H * 0.02, 0, H * 0.14);
+    try { dg.addColorStop(0, '#bae6fd'); dg.addColorStop(1, '#fef3c7'); } catch (e) {}
+    ctx.fillStyle = dg; ctx.fillRect(W * 0.40, H * 0.02, W * 0.20, H * 0.11);
+    ctx.fillStyle = '#78350f'; ctx.fillRect(W * 0.495, H * 0.02, 6, H * 0.11);
+    ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.fillRect(W * 0.42, H * 0.04, W * 0.05, H * 0.02);
+    // Bang go ten sieu thi o giua tuong
+    ctx.fillStyle = '#92400e'; ctx.fillRect(W * 0.36, H * 0.045, W * 0.28, H * 0.06);
+    ctx.fillStyle = '#fde68a'; ctx.font = 'bold ' + Math.round(H * 0.04) + 'px system-ui';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('★ VUA SIEU THI PHO ★', W * 0.50, H * 0.075);
+    // San go sang: van go ngang, xen ke 2 tong am (bat ke cap san, luon am nhu anh 2)
+    var plankH = 36;
+    for (var y = Math.floor(H * 0.16); y < H; y += plankH) {
+      var row = Math.floor((y - H * 0.16) / plankH);
+      ctx.fillStyle = row % 2 === 0 ? '#f0c98a' : '#e8b96f';
+      ctx.fillRect(0, y, W, plankH - 2);
+      ctx.fillStyle = 'rgba(146,64,14,0.18)';
+      ctx.fillRect(0, y + plankH - 2, W, 2);
+      // Van go nhe
+      ctx.fillStyle = 'rgba(146,64,14,0.10)';
+      ctx.fillRect((row * 211) % W, y + 8, W * 0.22, 3);
+      ctx.fillRect(((row * 211 + 500) % W), y + 22, W * 0.18, 3);
     }
-    // Highlight bong san
-    ctx.fillStyle = 'rgba(255,255,255,0.10)';
+    // Anh den vang am tren san
+    ctx.fillStyle = 'rgba(253,230,138,0.14)';
     ctx.fillRect(W * 0.1, H * 0.62, W * 0.8, 4);
     ctx.fillRect(W * 0.1, H * 0.78, W * 0.8, 3);
   }
@@ -58,24 +79,26 @@
     // Bong do
     ctx.fillStyle = 'rgba(0,0,0,0.20)';
     ctx.fillRect(x + 6, y + h + 4, w, 8);
-    // Than ke
-    ctx.fillStyle = '#78350f'; ctx.fillRect(x, y, w, h);
-    ctx.fillStyle = '#92400e'; ctx.fillRect(x, y, w, 8);
+    // Than ke go nau am + vien tren vang (anh 2)
+    ctx.fillStyle = '#8b5a2b'; ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = '#a16207'; ctx.fillRect(x, y, w, 6);
+    ctx.fillStyle = '#d97706'; ctx.fillRect(x, y + 6, w, 4);
     ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fillRect(x, y, w, 3);
     // Hang hoa: o pixel theo so luong
-    var cols = 6, rows = 2, cw = w / cols, ch = (h - 22) / rows;
+    var cols = 6, rows = 3, cw = w / cols, ch = (h - 22) / rows; // 7.1.1: 3 tang, nhieu mau hon
     var n = Math.round(pct * cols * rows);
     for (var i = 0; i < cols * rows; i++) {
       var cx = x + (i % cols) * cw, cy = y + 8 + Math.floor(i / cols) * ch;
       if (i < n) {
-        ctx.fillStyle = p.color; ctx.fillRect(cx + 3, cy + 3, cw - 6, ch - 6);
+        var palette = [p.color, '#ef4444', '#f59e0b', '#4ade80', '#38bdf8', '#f472b6', '#a78bfa', '#facc15'];
+        ctx.fillStyle = palette[i % palette.length]; ctx.fillRect(cx + 3, cy + 3, cw - 6, ch - 6);
         ctx.fillStyle = p.dark; ctx.fillRect(cx + 3, cy + ch - 9, cw - 6, 4);
       } else {
         ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(cx + 3, cy + 3, cw - 6, ch - 6);
       }
     }
     // Nhan gia + ten
-    ctx.fillStyle = '#fff'; ctx.fillRect(x, y + h - 18, w, 18);
+    ctx.fillStyle = '#fff8e7'; ctx.fillRect(x, y + h - 18, w, 18);
     ctx.fillStyle = '#111827'; ctx.font = 'bold ' + Math.round(H * 0.018) + 'px system-ui';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(p.icon + ' ' + p.name + ' ' + U.fmt(VST.game.sellPrice(p)) + 'd  (' + stock + '/' + cap + ')', x + w / 2, y + h - 9);
@@ -109,22 +132,25 @@
     ctx.fillStyle = 'rgba(0,0,0,0.20)';
     ctx.beginPath(); ctx.ellipse(x, y + 26, 46, 10, 0, 0, 6.29); ctx.fill();
     if (kind === 'pos') {
-      ctx.fillStyle = '#1e3a8a'; ctx.fillRect(x - 45, y - 30, 90, 55);
-      ctx.fillStyle = '#facc15'; ctx.fillRect(x - 45, y - 30, 90, 8);
-      ctx.fillStyle = '#fff'; ctx.font = 'bold 15px system-ui'; ctx.textAlign = 'center';
+      // Quay tinh tien go (anh 2: quay go ben phai, thu ngan mu vang dung sau)
+      ctx.fillStyle = '#8b5a2b'; ctx.fillRect(x - 52, y - 30, 104, 55);
+      ctx.fillStyle = '#d97706'; ctx.fillRect(x - 52, y - 30, 104, 8);
+      ctx.fillStyle = '#fde68a'; ctx.fillRect(x - 52, y + 18, 104, 7);
+      ctx.fillStyle = '#fff7e6'; ctx.font = 'bold 15px system-ui'; ctx.textAlign = 'center';
       ctx.fillText('💰 POS', x, y - 8);
-      ctx.fillStyle = '#93c5fd'; ctx.fillText('Tinh tien', x, y + 12);
+      ctx.fillStyle = '#fde68a'; ctx.fillText('Tinh tien', x, y + 12);
       var q = R.customers.filter(function (c) { return c.state === 'queue'; }).length;
       if (q > 0) { ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(x + 40, y - 28, 13, 0, 6.29); ctx.fill(); ctx.fillStyle = '#fff'; ctx.fillText(String(q), x + 40, y - 28); }
     } else if (kind === 'coffee') {
-      ctx.fillStyle = '#78350f'; ctx.fillRect(x - 40, y - 28, 80, 52);
+      ctx.fillStyle = '#8b5a2b'; ctx.fillRect(x - 40, y - 28, 80, 52);
       ctx.fillStyle = '#f59e0b'; ctx.fillRect(x - 40, y - 28, 80, 8);
       ctx.fillStyle = '#fff'; ctx.font = 'bold 15px system-ui'; ctx.textAlign = 'center';
       ctx.fillText('☕ Ca Phe', x, y - 6);
       ctx.fillStyle = '#fde68a'; ctx.fillText('15k / ly', x, y + 12);
     } else if (kind === 'door') {
-      ctx.fillStyle = '#0f172a'; ctx.fillRect(x - 55, y - 14, 110, 16);
-      ctx.fillStyle = '#38bdf8'; ctx.font = 'bold 13px system-ui'; ctx.textAlign = 'center';
+      // Cua kinh sang o duoi giua
+      ctx.fillStyle = '#bae6fd'; ctx.fillRect(x - 55, y - 14, 110, 16);
+      ctx.fillStyle = '#92400e'; ctx.font = 'bold 13px system-ui'; ctx.textAlign = 'center';
       ctx.fillText('🚪 CUA RA VAO', x, y - 4);
     }
   }
@@ -135,8 +161,8 @@
     var moving = !!c.moving;
     var bob = moving ? Math.sin((c.walkTimer || 0) * 12) * 2 : Math.sin(now / 600) * 0.8;
     // Bong chan (co lai khi dang buoc)
-    ctx.fillStyle = 'rgba(0,0,0,0.28)';
-    ctx.beginPath(); ctx.ellipse(x, y + 24, moving ? 16 : 19, 6, 0, 0, 6.29); ctx.fill();
+    ctx.fillStyle = 'rgba(0,0,0,0.22)';
+    ctx.beginPath(); ctx.ellipse(x, y + 28, moving ? 20 : 24, 7, 0, 0, 6.29); ctx.fill();
     // --- Duong sprite sheet that (uu tien) ---
     var useSprite = G && G.settings && G.settings.walkAnim !== false;
     var key = isManager ? 'manager' : 'customer';
@@ -146,23 +172,23 @@
       var col = moving ? (c.walkFrame || 0) : 1; // khung 1 = dung yen
       // Sheet khach nu: khung 3 hang trai bi ve nham sang phai -> dung khung 2 thay the
       if (key === 'customer' && row === 1 && col === 3) col = 2;
-      if (drawSpriteFrame(ctx, img, col, row, x, y + 22 + bob, 62, 62)) {
+      if (drawSpriteFrame(ctx, img, col, row, x, y + 26 + bob, 78, 78)) { // 7.1.1: to hon 25%
         // Nhan / thanh kien nhan / cam xuc van ve them ben tren sprite
         if (!isManager && c.type) {
           var t2 = VST.DATA.CUSTOMER_TYPES[c.type];
           ctx.font = '16px system-ui'; ctx.textAlign = 'center';
-          ctx.fillText(t2.icon, x + 24, y - 34 + bob);
+          ctx.fillText(t2.icon, x + 30, y - 42 + bob);
           if (c.state === 'queue' || c.state === 'browse') {
             var pct = Math.max(0, c.patience / c.maxPatience);
-            ctx.fillStyle = '#111827'; ctx.fillRect(x - 14, y - 44 + bob, 28, 5);
+            ctx.fillStyle = '#111827'; ctx.fillRect(x - 17, y - 54 + bob, 34, 6);
             ctx.fillStyle = pct > 0.5 ? '#4ade80' : pct > 0.25 ? '#facc15' : '#ef4444';
-            ctx.fillRect(x - 14, y - 44 + bob, 28 * pct, 5);
+            ctx.fillRect(x - 17, y - 54 + bob, 34 * pct, 6);
           }
-          if (c.mood === 'angry') { ctx.font = '18px system-ui'; ctx.fillText('😡', x, y - 48); }
+          if (c.mood === 'angry') { ctx.font = '18px system-ui'; ctx.fillText('😡', x, y - 58); }
         }
         if (isManager) {
           ctx.font = 'bold 12px system-ui'; ctx.textAlign = 'center'; ctx.fillStyle = '#fff';
-          ctx.fillText('QUAN LY', x, y - 42 + bob);
+          ctx.fillText('QUAN LY', x, y - 52 + bob);
         }
         return;
       }
@@ -198,6 +224,29 @@
       ctx.font = 'bold 12px system-ui'; ctx.textAlign = 'center'; ctx.fillStyle = '#fff';
       ctx.fillText('QUAN LY', x, y - 34 + bob);
     }
+  }
+
+  function drawFruitStall(ctx, W, H, G, now) {
+    // Quay rau cu tron o giua san (anh 2) — trang tri, o khoang trong giua 2 hang ke va tram
+    loadExtra();
+    var cx = W * 0.50, cy = H * 0.68, rw = 210, rh = 118;
+    ctx.fillStyle = 'rgba(0,0,0,0.18)';
+    ctx.beginPath(); ctx.ellipse(cx, cy + rh / 2 + 6, rw / 2 + 8, 12, 0, 0, 6.29); ctx.fill();
+    var simg = extraImgs['stall'];
+    if (spriteReady(simg)) {
+      ctx.fillStyle = '#8b5a2b'; ctx.fillRect(cx - rw / 2 - 6, cy - rh / 2 - 6, rw + 12, rh + 12);
+      try { ctx.drawImage(simg, cx - rw / 2, cy - rh / 2, rw, rh); } catch (e) {}
+    } else {
+      // Fallback: ban go tron + 3 dong trai cay
+      ctx.fillStyle = '#8b5a2b'; ctx.beginPath(); ctx.ellipse(cx, cy, rw / 2, rh / 2, 0, 0, 6.29); ctx.fill();
+      var fruits = ['#ef4444', '#facc15', '#f97316', '#4ade80'];
+      for (var i = 0; i < 12; i++) {
+        ctx.fillStyle = fruits[i % fruits.length];
+        ctx.beginPath(); ctx.arc(cx - 80 + (i % 6) * 32, cy - 26 + Math.floor(i / 6) * 34, 12, 0, 6.29); ctx.fill();
+      }
+    }
+    ctx.fillStyle = '#92400e'; ctx.font = 'bold 15px system-ui'; ctx.textAlign = 'center';
+    ctx.fillText('🍎🍌🥕 Quay rau cu', cx, cy + rh / 2 + 22);
   }
 
   function drawTruck(ctx, W, H, G, now) {
@@ -236,7 +285,7 @@
     if (m >= 420 && m < 660) tint = 'rgba(255,220,150,0.06)';
     else if (m >= 660 && m < 900) tint = 'rgba(255,255,255,0.02)';
     else if (m >= 900 && m < 1080) { tint = 'rgba(255,150,60,0.12)'; lamp = true; }
-    else { tint = 'rgba(80,90,200,0.18)'; lamp = true; }
+    else { tint = 'rgba(146,64,14,0.12)'; lamp = true; } // 7.1.1: toi van am, khong xanh lanh
     ctx.fillStyle = tint; ctx.fillRect(0, 0, W, H);
     if (lamp) {
       var g1 = ctx.createRadialGradient(W * 0.88, H * 0.76, 10, W * 0.88, H * 0.76, 220);
@@ -289,6 +338,7 @@
     var W = 1280, H = 720;
     drawFloor(ctx, W, H, G);
     VST.DATA.SHELVES.forEach(function (s) { drawShelf(ctx, W, H, G, R, s, now); });
+    drawFruitStall(ctx, W, H, G, now);
     drawStation(ctx, W, H, G, R, 'pos', now);
     drawStation(ctx, W, H, G, R, 'coffee', now);
     drawStation(ctx, W, H, G, R, 'door', now);
@@ -303,7 +353,7 @@
     if (G.staff && G.staff.cashier && G.staff.cashier.hired) {
       loadSprites();
       var cimg = sprites['cashier_idle'];
-      if (spriteReady(cimg)) { ctx.drawImage(cimg, W * 0.82 - 24, H * 0.70 - 48, 48, 48); }
+      if (spriteReady(cimg)) { ctx.drawImage(cimg, W * 0.82 - 30, H * 0.70 - 60, 60, 60); }
     }
     var actors = R.customers.slice();
     actors.sort(function (a, b) { return a.y - b.y; });
@@ -312,7 +362,7 @@
     drawParticles(ctx, W, H, R);
     drawLighting(ctx, W, H, G, R, now);
     // Gio + ngay tren canvas
-    ctx.fillStyle = 'rgba(15,23,42,0.85)'; ctx.fillRect(W - 190, 8, 182, 30);
+    ctx.fillStyle = 'rgba(146,64,14,0.88)'; ctx.fillRect(W - 190, 8, 182, 30);
     ctx.fillStyle = '#facc15'; ctx.font = 'bold 16px system-ui'; ctx.textAlign = 'center';
     ctx.fillText('Ngay ' + G.day + '  •  ' + U.fmtTime(R.minuteOfDay), W - 99, 28);
   }
