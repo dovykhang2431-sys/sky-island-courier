@@ -1,4 +1,4 @@
-/* Vua Sieu Thi Pho — PWA v7.1 | js/game.js
+/* Vua Sieu Thi Pho — PWA v7.2 | js/game.js
    Vong choi: ngay 7:00-22:00, khach, checkout, len ke, dat si, shipper,
    ca phe, su co, thoi tiet, sao, tien dien, cuoi ngay P&L.
    Ke thua fix 6.1: pause khi mo modal, checkout het hang doi o POS,
@@ -92,20 +92,86 @@
     }
     return false;
   }
+  // 7.2: quay rau cu tron giua san co va cham dang ELLIPSE (khop hinh ve o
+  // render.js: tam (50, 68), ban kinh hinh ~8.2%; thu hep con 7.5 de thoang).
+  // Ellipse quan trong: va cham hop vuong tao goc ket — quan ly bi kep giua
+  // 2 ke hang 2 va mat tren quay, khong toi duoc POS; ellipse cho truot
+  // doc vong ngoai quay roi di tiep.
+  function hitsStall(x, y) {
+    var dx = (x - 50) / 7.5, dy = (y - 68) / 6.5; // det hon chieu dung de loi di ngang (y 58.5-61.5) rong hon
+    return dx * dx + dy * dy < 1;
+  }
+  function hitsObstacle(x, y) { return hitsShelf(x, y) || hitsStall(x, y); }
+  function blockingShelf(x, y) {
+    var d = data(); if (!d || !d.SHELVES) return null;
+    for (var i = 0; i < d.SHELVES.length; i++) {
+      var s = d.SHELVES[i];
+      if (x > s.x - 1.5 && x < s.x + s.w + 1.5 && y > s.y - 1.5 && y < s.y + s.h + 1.5) return s;
+    }
+    return null;
+  }
   function moveToward(c, tx, ty, speed, dt) {
     var dx = tx - c.x, dy = ty - c.y, dist = Math.sqrt(dx * dx + dy * dy);
-    if (dist < 0.6) { c.x = tx; c.y = ty; return true; }
+    if (dist < 0.6) { c.x = tx; c.y = ty; c._detour = 0; return true; }
+    // 7.2: dich den nam trong vat can (ke / quay rau cu) thi dung o mep
+    // chu khong di mai khong toi (tranh ket khi cham vao giua quay rau cu).
+    // Nguong 9 > ban kinh ellipse quay (7.5) de dung ngay khi cham mep quay.
+    if (hitsObstacle(tx, ty) && dist < 9) { c._detour = 0; return true; }
     var step = speed * dt;
     if (step >= dist) {
-      if (!hitsShelf(tx, ty)) { c.x = tx; c.y = ty; return true; }
+      if (!hitsObstacle(tx, ty)) { c.x = tx; c.y = ty; c._detour = 0; return true; }
       // Dich den nam trong ke: dung ngay truoc ke
       return false;
     }
+    // 7.2: neu dang vong (detour) thi CHI buoc ngang cho den khi qua khoi
+    // gioi han vat can (c._detour.lo/hi). Khong thu duong cheo trong luc
+    // vong: duong cheo "thong" 1 buoc roi lai ket se lam dao qua dao lai.
+    if (c._detour) {
+      var dd = c._detour;
+      var pos = dd.axis === 'x' ? c.x : c.y;
+      if (pos < dd.lo || pos > dd.hi) { c._detour = 0; }
+      else {
+        var ox = dd.axis === 'x' ? dd.dir * step : 0;
+        var oy = dd.axis === 'y' ? dd.dir * step : 0;
+        if (!hitsObstacle(c.x + ox, c.y + oy)) {
+          if (dd.axis === 'x') c.x += dd.dir * step; else c.y += dd.dir * step;
+          return false;
+        }
+        if (!hitsObstacle(c.x - ox, c.y - oy)) {
+          if (dd.axis === 'x') c.x -= dd.dir * step; else c.y -= dd.dir * step;
+          dd.dir = -dd.dir;
+          return false;
+        }
+        c._detour = 0;
+        return false;
+      }
+    }
     var nx = c.x + dx / dist * step, ny = c.y + dy / dist * step;
-    if (!hitsShelf(nx, ny)) { c.x = nx; c.y = ny; return false; }
-    // Truot doc canh ke: thu di rieng theo truc X roi truc Y
-    if (!hitsShelf(nx, c.y)) { c.x = nx; return false; }
-    if (!hitsShelf(c.x, ny)) { c.y = ny; return false; }
+    if (!hitsObstacle(nx, ny)) { c.x = nx; c.y = ny; return false; }
+    // Truot doc canh ke: thu di rieng theo truc X roi truc Y.
+    // Chi truot khi buoc truc that su di chuyen (>|step|*0.2): neu dich den
+    // thang phia tren (dx ~ 0) thi buoc X chi ~0, tuong la truot duoc nhung
+    // that ra dung yen — phai roi xuong phan thoat ket ben duoi.
+    if (!hitsObstacle(nx, c.y) && Math.abs(nx - c.x) > step * 0.2) { c.x = nx; return false; }
+    if (!hitsObstacle(c.x, ny) && Math.abs(ny - c.y) > step * 0.2) { c.y = ny; return false; }
+    // 7.2: bat dau vong — tim vat can dang chan diem (nx,ny) de biet gioi
+    // han can vuot qua. Huong vong: ve mep gan hon cua vat can.
+    var bs = blockingShelf(nx, ny);
+    if (bs) {
+      if (Math.abs(dx) >= Math.abs(dy)) {
+        var loY = bs.y - 1.5, hiY = bs.y + bs.h + 1.5;
+        c._detour = { axis: 'y', dir: (c.y - loY) < (hiY - c.y) ? -1 : 1, lo: loY, hi: hiY };
+      } else {
+        var loX = bs.x - 1.5, hiX = bs.x + bs.w + 1.5;
+        c._detour = { axis: 'x', dir: (c.x - loX) < (hiX - c.x) ? -1 : 1, lo: loX, hi: hiX };
+      }
+    } else if (hitsStall(nx, ny)) {
+      if (Math.abs(dx) >= Math.abs(dy)) {
+        c._detour = { axis: 'y', dir: (c.y - 61.5) < (74.5 - c.y) ? -1 : 1, lo: 61.5, hi: 74.5 };
+      } else {
+        c._detour = { axis: 'x', dir: (c.x - 42.5) < (57.5 - c.x) ? -1 : 1, lo: 42.5, hi: 57.5 };
+      }
+    }
     return false;
   }
   function updateWalk(c, dt, moving, dx, dy) {
@@ -598,9 +664,9 @@
       var hx = held.x / hl, hy = held.y / hl;
       var ox = m.x, oy = m.y;
       var nx2 = U.clamp(m.x + hx * managerSpeed() * dt, 4, 96), ny2 = U.clamp(m.y + hy * managerSpeed() * dt, 12, 94);
-      if (!hitsShelf(nx2, ny2)) { m.x = nx2; m.y = ny2; }
-      else if (!hitsShelf(nx2, m.y)) m.x = nx2;
-      else if (!hitsShelf(m.x, ny2)) m.y = ny2;
+      if (!hitsObstacle(nx2, ny2)) { m.x = nx2; m.y = ny2; }
+      else if (!hitsObstacle(nx2, m.y)) m.x = nx2;
+      else if (!hitsObstacle(m.x, ny2)) m.y = ny2;
       m.moving = true; m.targetAction = null; m.targetPid = null;
       updateWalk(m, dt, true, m.x - ox, m.y - oy);
       m.face = hx >= 0 ? 1 : -1;
@@ -639,7 +705,23 @@
       }
       if (c.state === 'enter') {
         var s = shelfPos(c.targetShelf);
-        if (moveToward(c, s.x + s.w / 2, s.y + s.h + 4, c.speed * blackoutSlow, dt)) { c.state = 'browse'; c.waitTimer = U.rand(3, 6); }
+        var dest = { x: s.x + s.w / 2, y: s.y + s.h + 4 };
+        // 7.2: ke hang 1 nam ngay sau ke hang 2 cung cot — di thang tu cua
+        // se ket duoi day ke hang 2 (dich den thang phia tren, dx ~ 0).
+        // Di vong qua hanh lang doc giua 2 cot ke (x=28/50/72) roi re ngang
+        // o loi di giua 2 hang ke (y=39) truoc khi toi truoc ke hang 1.
+        if (!c.route) {
+          if (s.y < 30) {
+            var corr = s.x < 20 ? 28 : s.x < 50 ? 50 : s.x < 70 ? 50 : 72;
+            c.route = [{ x: corr, y: 77 }, { x: corr, y: 39 }, dest];
+          } else { c.route = [dest]; }
+          c.wp = 0;
+        }
+        var wp = c.route[c.wp];
+        if (moveToward(c, wp.x, wp.y, c.speed * blackoutSlow, dt)) {
+          if (c.wp < c.route.length - 1) c.wp++;
+          else { c.state = 'browse'; c.waitTimer = U.rand(3, 6); }
+        }
       } else if (c.state === 'browse') {
         c.waitTimer -= dt;
         if (c.waitTimer <= 0) {
@@ -711,7 +793,7 @@
     endDay: endDay, startNextDay: startNextDay, tryUpgradeChapter: tryUpgradeChapter,
     applyBankrupt: applyBankrupt, managerGoTo: managerGoTo, togglePause: togglePause,
     setSpeed: setSpeed, setMarkup: setMarkup, setMoveDir: setMoveDir, setJoystick: setJoystick,
-    managerSpeed: managerSpeed, hitsShelf: hitsShelf, updateWalk: updateWalk,
+    managerSpeed: managerSpeed, hitsShelf: hitsShelf, hitsStall: hitsStall, hitsObstacle: hitsObstacle, updateWalk: updateWalk,
     sellPrice: sellPrice, buyPrice: buyPrice,
     maxCap: maxCap, appeal: appeal, burst: burst, floatText: floatText
   };

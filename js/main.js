@@ -1,4 +1,4 @@
-/* Vua Sieu Thi Pho — PWA v7.1 | js/main.js
+/* Vua Sieu Thi Pho — PWA v7.2 | js/main.js
    Khoi tao, game loop, input (phim giu / joystick / D-pad / pointer), resize/DPR,
    dang ky Service Worker, install prompt, luu khi tat tab. */
 (function () {
@@ -186,6 +186,11 @@
     if (b) b.style.display = off ? 'block' : 'none';
   }
 
+  function setupRotatePrompt() {
+    // 7.2: nhac xoay ngang — bam "Choi doc van duoc" thi an nhac cho lan choi nay
+    var bp = document.getElementById('btnPlayPortrait');
+    if (bp) bp.addEventListener('click', function () { document.body.classList.add('rotate-ok'); });
+  }
   function setupStartScreen() {
     var play = document.getElementById('btnPlay');
     var cont = document.getElementById('btnContinue');
@@ -213,6 +218,7 @@
     setupCanvas();
     setupKeyboard();
     setupControls();
+    setupRotatePrompt();
     VST.ui.bind();
     setupPWA();
     setupStartScreen();

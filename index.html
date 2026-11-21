@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
 <meta name="theme-color" content="#92400e">
 <meta name="description" content="Vua Sieu Thi Pho — game quan ly sieu thi 3D hoat hinh am, choi offline, PWA.">
-<title>Vua Siêu Thị Phố — PWA v7.1.3</title>
+<title>Vua Siêu Thị Phố — PWA v7.2</title>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="./assets/icons/icon-192.png">
@@ -50,6 +50,14 @@
     <button class="dpad-btn" data-dir="right" aria-label="Phai">▶</button>
   </div>
 </main>
+<div id="rotatePrompt" role="dialog" aria-label="Xoay ngang dien thoai">
+  <div class="rotate-card">
+    <div class="rotate-icon">📱↻</div>
+    <h2>Xoay ngang điện thoại để chơi</h2>
+    <p>Vua Siêu Thị Phố 7.2 chơi ở màn hình ngang — siêu thị rộng hơn, kệ sắc nét hơn, joystick 2 tay thoải mái hơn.</p>
+    <button id="btnPlayPortrait" class="btn">Chơi dọc vẫn được</button>
+  </div>
+</div>
 <nav id="dock">
   <button class="dock-btn" data-modal="stock">📦<span>Kho</span></button>
   <button class="dock-btn" data-modal="chapters">🏆<span>Chuong</span></button>
@@ -71,7 +79,7 @@
   <div class="start-card">
     <div class="start-logo">🏪</div>
     <h1 class="wood-sign">VUA SIÊU THỊ PHỐ</h1>
-    <p class="tagline">Từ tạp hóa hẻm nhỏ thành đế chế bán lẻ — siêu thị 3D ấm cúng, dáng đi dễ thương, joystick ảo, chơi offline, lưu tự động.</p>
+    <p class="tagline">Từ tạp hóa hẻm nhỏ thành đế chế bán lẻ — siêu thị ngang rộng rãi, kệ sắc nét, dáng đi dễ thương, joystick ảo, chơi offline, lưu tự động. Xoay ngang điện thoại để chơi nhé!</p>
     <div class="start-features">
       <span>🛒 8 san pham</span><span>👥 6 loai khach</span><span>🧑‍💼 4 nhan vien</span>
       <span>🏆 10 chuong</span><span>🎯 Nhiem vu ngay</span><span>🏦 Vay &amp; gui tiet kiem</span>

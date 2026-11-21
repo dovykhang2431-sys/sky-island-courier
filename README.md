@@ -1,4 +1,14 @@
-# Vua Siêu Thị Phố — PWA v7.1.3
+# Vua Siêu Thị Phố — PWA v7.2
+
+## Mới trong 7.2 — Màn hình ngang + kệ sắc nét (theo ảnh xem trước màn ngang đã chốt, chưa đẩy GitHub)
+
+- **Chơi màn hình ngang:** game giờ chơi ở màn hình ngang cho rộng rãi. Trên điện thoại dọc hiện lời nhắc thân thiện "Xoay ngang điện thoại để chơi" (có nút "Chơi dọc vẫn được" để tắt nhắc), màn dọc không bị vỡ. HUD và dock gọn lại khi màn ngang thấp để sân chơi 16:9 được cao nhất. App cài đặt (manifest) mở ở hướng ngang.
+- **Kệ vẽ lại sắc nét:** kệ gỗ 4 tầng rõ ràng, mỗi món vẽ hình riêng — rau xanh, táo/cam, gói mì, ổ bánh mì, hộp sữa, chai nước, kẹo bọc giấy, túi snack — thay cho ô màu chung chung. Sàn gỗ có mối nối ván so le, cửa kính rộng 3 ô phía sau nhìn ra phố, có chậu cây 2 bên.
+- **Quầy rau củ tròn giữa sàn** vẽ tay hoàn toàn (táo, cam, chuối, nho, súp lơ, cà rốt trên bàn gỗ tròn) và **có va chạm thật** như kệ — quản lý và khách đi vòng quanh, không đi xuyên qua, không bị kẹt khi chạm vào giữa quầy.
+- **Quầy POS gỗ** chi tiết hơn: băng chuyền có vạch, máy tính tiền có màn hình và nút bấm. Nhân vật to hơn 15% (90px, vẫn sheet đi bộ 8 khung).
+- **Màn hình bắt đầu** dùng ảnh xem trước màn ngang `assets/img/preview-landscape.webp` làm nền.
+- Phiên bản: `SAVE_VERSION 7.2`, cùng `SAVE_KEY vua-sieu-thi-pwa-v7` nên save 7.0/7.1/7.1.2/7.1.3 vẫn load được. Lối chơi, nhiệm vụ, chương, ngân hàng, cài đặt, joystick/D-pad, sửa lỗi tính tiền (7.1.2) và giữ giờ trong ngày (7.1.3) giữ nguyên.
+- Lưu ý thật: engine vẫn là canvas 2D (không phải 3D thật như ảnh xem trước). Bản này chưa chơi thử bằng trình duyệt thật trên điện thoại.
 
 ## Sửa lỗi 7.1.3 (3 lỗi nhỏ còn lại sau 7.1.2, chưa đẩy GitHub)
 - Giờ trong ngày được lưu vào save (`minuteOfDay` 420–1320): nút Tiếp tục dùng `resumeDay()` thay vì `startDay()`, nên tải lại game không còn về 7:00; ngày mới / phá sản vẫn bắt đầu 7:00. Save 7.0/7.1/7.1.2 vẫn load được (thiếu trường thì mặc định 7:00).
@@ -86,10 +96,10 @@ sw.js                   Service worker, cache-first v7, offline fallback
 css/style.css           Layout, HUD, canvas, dock, responsive mobile/desktop
 css/ui.css              Modal, toast, màn hình bắt đầu, báo cáo P&L
 js/data.js              Sản phẩm, chương, nâng cấp, khách, nhân viên, nhiệm vụ
-js/state.js             State + save/load deep-merge, version 7.1.2, export/import
+js/state.js             State + save/load deep-merge, version 7.2, export/import
 js/audio.js             WebAudio tự sinh: click, tiền, level-up, nhạc nền
 js/game.js              Vòng chơi: ngày, khách, checkout, kho, shipper, sự cố, P&L
-js/render.js            Vẽ canvas 1280x720: nền, kệ, nhân vật, ánh sáng, hạt — 7.1.1: tông ấm, sàn gỗ, quầy rau củ giữa, nhân vật 78px
+js/render.js            Vẽ canvas 1280x720: nền, kệ, nhân vật, ánh sáng, hạt — 7.2: màn ngang, kệ 4 tầng sắc nét, quầy rau củ vẽ tay có va chạm, nhân vật 90px
 js/ui.js                HUD, modal, toast, P&L cuối ngày, phá sản
 js/main.js              Khởi tạo, game loop, input, resize, SW, install prompt
 assets/icons/icon-192.png / icon-512.png

@@ -1,4 +1,4 @@
-/* Vua Sieu Thi Pho — PWA v7.1 | js/ui.js
+/* Vua Sieu Thi Pho — PWA v7.2 | js/ui.js
    HUD, bottom-nav, modal, toast, man hinh bat dau, P&L cuoi ngay.
    Them: cai dat day du (joystick/D-pad/dang di), confirm modal, huong dan 3 buoc. */
 (function () {

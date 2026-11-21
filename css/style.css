@@ -1,4 +1,4 @@
-/* Vua Sieu Thi Pho — PWA v7.1.1 | css/style.css (layout + game) */
+/* Vua Sieu Thi Pho — PWA v7.2 | css/style.css (layout + game) */
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; height: 100%; }
 body {
@@ -92,6 +92,41 @@ body.dpad-on #dpad { display: grid; }
   #stageWrap { max-width: 1280px; margin: 0 auto; width: 100%; aspect-ratio: 16/9; flex: none; }
   #dock { justify-content: center; }
   .dock-btn { flex: none; min-width: 110px; }
+}
+/* 7.2 — Nhac xoay ngang: chi hien khi man doc tren thiet bi nho, an khi nguoi choi
+   bam "Choi doc van duoc" (body.rotate-ok) hoac khi man hinh da ngang. */
+#rotatePrompt {
+  display: none; position: fixed; inset: 0; z-index: 40;
+  background: rgba(74,44,10,.82); align-items: center; justify-content: center; padding: 20px;
+}
+.rotate-card {
+  background: #fff8e7; border: 3px solid #b45309; border-radius: 20px; color: #4a2c0a;
+  padding: 24px; max-width: 420px; width: 100%; text-align: center;
+  box-shadow: 0 0 50px rgba(180,83,9,.4);
+}
+.rotate-icon { font-size: 64px; animation: rotateWiggle 1.6s ease-in-out infinite; }
+@keyframes rotateWiggle { 0%,100% { transform: rotate(-12deg); } 50% { transform: rotate(78deg); } }
+.rotate-card h2 { color: #92400e; margin: 8px 0; font-size: 22px; }
+.rotate-card p { color: #6b4226; margin: 4px 0 14px; }
+@media (orientation: portrait) and (max-width: 900px) {
+  /* Man hinh bat dau (z-index 100) che len tren nen nhac chi hien sau khi vao game */
+  body:not(.rotate-ok) #rotatePrompt { display: flex; }
+}
+/* 7.2 — Man ngang thap (dien thoai xoay ngang ~360-430px cao): HUD + dock gon lai
+   de stage 16:9 duoc cao nhat co the, joystick/D-pad sat 2 goc duoi vua ngon tay cai. */
+@media (orientation: landscape) and (max-height: 500px) {
+  #hud { padding: 4px 8px; gap: 4px; flex-wrap: nowrap; }
+  .logo { font-size: 14px; }
+  .hud-pill { font-size: 11px; padding: 2px 7px; }
+  .stamina-wrap { width: 48px; height: 8px; }
+  .btn.small { padding: 3px 6px; font-size: 12px; }
+  #dock { padding: 4px 6px; gap: 3px; }
+  .dock-btn { font-size: 16px; padding: 4px 2px; min-width: 0; }
+  .dock-btn span { font-size: 10px; }
+  #hintBar { font-size: 10px; bottom: 3px; padding: 2px 10px; }
+  #joystick { bottom: 34px; left: 10px; width: 96px; height: 96px; }
+  #joyKnob { left: 30px; top: 30px; width: 36px; height: 36px; }
+  #dpad { bottom: 34px; right: 10px; grid-template-columns: 38px 38px 38px; grid-template-rows: 38px 38px; }
 }
 /* Portrait phone 390px: khong tran */
 @media (max-width: 700px) {

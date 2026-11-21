@@ -1,4 +1,4 @@
-/* Vua Sieu Thi Pho — PWA v7.1 | js/data.js
+/* Vua Sieu Thi Pho — PWA v7.2 | js/data.js
    Du lieu tinh: san pham, chuong, nang cap, khach, nhan vien, nhiem vu, thanh tuu.
    Khong chua logic choi. Giu lai can bang goc ban 6.1/6.2:
    - Chuong 1: targetCash 4.800.000, targetStar 3.5
@@ -37,15 +37,18 @@
   PRODUCTS.forEach(function (p) { PRODUCT_MAP[p.id] = p; });
 
   // Ke 8 mon: 2 hang x 4 cot (toa do % tren canvas 1280x720)
+  // 7.2: hang 2 o y=42 (thay vi 46) de co loi di ngang giua day ke (57)
+  // va mat tren quay rau cu (61.5) — khong co loi nay, khe giua 2 ke
+  // hang 2 bi kep kin boi quay, quan ly/khach khong xuong duoc POS.
   var SHELVES = [
     { productId: 'veggie', x: 8,  y: 20, w: 18, h: 15 },
     { productId: 'fruit',  x: 30, y: 20, w: 18, h: 15 },
     { productId: 'noodle', x: 52, y: 20, w: 18, h: 15 },
     { productId: 'bread',  x: 74, y: 20, w: 18, h: 15 },
-    { productId: 'milk',   x: 8,  y: 46, w: 18, h: 15 },
-    { productId: 'drink',  x: 30, y: 46, w: 18, h: 15 },
-    { productId: 'candy',  x: 52, y: 46, w: 18, h: 15 },
-    { productId: 'snack',  x: 74, y: 46, w: 18, h: 15 }
+    { productId: 'milk',   x: 8,  y: 42, w: 18, h: 15 },
+    { productId: 'drink',  x: 30, y: 42, w: 18, h: 15 },
+    { productId: 'candy',  x: 52, y: 42, w: 18, h: 15 },
+    { productId: 'snack',  x: 74, y: 42, w: 18, h: 15 }
   ];
   var STATIONS = {
     pos:    { x: 88, y: 76, label: 'Quay POS' },

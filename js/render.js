@@ -1,7 +1,9 @@
-/* Vua Sieu Thi Pho — PWA v7.1.1 | js/render.js
-   Visual 7.1.1: tong am (san go sang, tuong kem, den vang) theo anh xem truoc 2;
-   quai rau cu tron o giua, ke to hon nhieu mau hon, nhan vat to hon 25% (78px). Engine van 2D. */
-/* Vua Sieu Thi Pho — PWA v7.1 | js/render.js
+/* Vua Sieu Thi Pho — PWA v7.2 | js/render.js
+   Visual 7.2 (theo anh xem truoc man ngang da chot): sieu thi ngang rong,
+   ke go 4 tang sac net, moi mon ve hinh dang rieng; san go co moi noi van;
+   cua kinh rong phia sau, quay rau cu tron ve tay o giua san (co va cham),
+   quay POS go co may tinh tien; nhan vat 90px. Engine van 2D. */
+/* Vua Sieu Thi Pho — PWA v7.2 | js/render.js
    Ve bang sprite sheet dang di 4x2 (quan ly / thu ngan / khach), doi khung 120ms;
    neu anh chua tai xong thi dung fallback pixel + chan gia lap.
    Goc: ve pixel art bang canvas 1280x720, nen theo san/tuong, ke hang,
@@ -22,14 +24,6 @@
     });
   }
   function spriteReady(img) { return !!(img && img.complete && img.naturalWidth > 0); }
-  var extraImgs = {}, extraTried = false;
-  function loadExtra() {
-    if (extraTried || typeof Image === 'undefined') return;
-    extraTried = true;
-    [['stall', './assets/img/stall-fruit.jpg'], ['shelf', './assets/img/shelf-groceries.jpg'], ['counter', './assets/img/counter-pos.jpg']].forEach(function (kv) {
-      var im = new Image(); im.src = kv[1]; extraImgs[kv[0]] = im;
-    });
-  }
   function drawSpriteFrame(ctx, img, frame, row, x, y, w, h) {
     try { ctx.drawImage(img, frame * 256, row * 256, 256, 256, x - w / 2, y - h, w, h); return true; }
     catch (e) { return false; }
@@ -37,29 +31,52 @@
 
   function drawFloor(ctx, W, H, G) {
     var f = VST.DATA.FLOORS[G.floorId - 1], w = VST.DATA.WALLS[G.wallId - 1];
-    // Tuong kem am + vien go (anh xem truoc 2: tuong kem, tran go)
+    // Tuong kem am + vien go (anh xem truoc man ngang: tuong kem, tran go)
     ctx.fillStyle = '#fdf3d8'; ctx.fillRect(0, 0, W, H * 0.14);
     ctx.fillStyle = '#d97706'; ctx.fillRect(0, H * 0.14, W, 6);
     ctx.fillStyle = '#92400e'; ctx.fillRect(0, H * 0.155, W, 3);
-    // Cua kinh sang o giua phia sau (nhu anh 2: cua kinh nhin ra pho)
-    var dg = ctx.createLinearGradient(0, H * 0.02, 0, H * 0.14);
-    try { dg.addColorStop(0, '#bae6fd'); dg.addColorStop(1, '#fef3c7'); } catch (e) {}
-    ctx.fillStyle = dg; ctx.fillRect(W * 0.40, H * 0.02, W * 0.20, H * 0.11);
-    ctx.fillStyle = '#78350f'; ctx.fillRect(W * 0.495, H * 0.02, 6, H * 0.11);
-    ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.fillRect(W * 0.42, H * 0.04, W * 0.05, H * 0.02);
-    // Bang go ten sieu thi o giua tuong
+    // 7.2: mat tien kinh rong phia sau — 3 o cua kinh nhin ra pho, khung go nau
+    var dg = ctx.createLinearGradient(0, H * 0.015, 0, H * 0.135);
+    try { dg.addColorStop(0, '#7dd3fc'); dg.addColorStop(0.55, '#bae6fd'); dg.addColorStop(1, '#fef3c7'); } catch (e) {}
+    ctx.fillStyle = dg; ctx.fillRect(W * 0.30, H * 0.015, W * 0.40, H * 0.12);
+    ctx.fillStyle = '#78350f';
+    ctx.fillRect(W * 0.30, H * 0.015, W * 0.40, 4);
+    ctx.fillRect(W * 0.30, H * 0.125, W * 0.40, 4);
+    ctx.fillRect(W * 0.433, H * 0.015, 5, H * 0.12);
+    ctx.fillRect(W * 0.562, H * 0.015, 5, H * 0.12);
+    ctx.fillRect(W * 0.497, H * 0.015, 6, H * 0.12);
+    // Bong troi + duong pho ngoai cua kinh
+    ctx.fillStyle = 'rgba(255,255,255,0.75)';
+    ctx.fillRect(W * 0.33, H * 0.035, W * 0.06, H * 0.02);
+    ctx.fillRect(W * 0.58, H * 0.05, W * 0.05, H * 0.015);
+    ctx.fillStyle = '#94a3b8'; ctx.fillRect(W * 0.30, H * 0.10, W * 0.40, H * 0.035);
+    ctx.fillStyle = '#fde68a'; ctx.fillRect(W * 0.30, H * 0.105, W * 0.40, 3);
+    // Chau cay 2 ben cua kinh
+    [[0.27, 0.10], [0.73, 0.10]].forEach(function (pt) {
+      var px0 = W * pt[0], py0 = H * pt[1];
+      ctx.fillStyle = '#b45309'; ctx.fillRect(px0 - 9, py0 - 2, 18, 14);
+      ctx.fillStyle = '#16a34a';
+      ctx.beginPath(); ctx.arc(px0 - 6, py0 - 10, 8, 0, 6.29); ctx.arc(px0 + 6, py0 - 12, 9, 0, 6.29); ctx.arc(px0, py0 - 18, 8, 0, 6.29); ctx.fill();
+    });
+    // Bang go ten sieu thi o giua tuong (treo tren cua kinh)
     ctx.fillStyle = '#92400e'; ctx.fillRect(W * 0.36, H * 0.045, W * 0.28, H * 0.06);
+    ctx.fillStyle = '#78350f'; ctx.fillRect(W * 0.36, H * 0.105, W * 0.28, 4);
     ctx.fillStyle = '#fde68a'; ctx.font = 'bold ' + Math.round(H * 0.04) + 'px system-ui';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText('★ VUA SIEU THI PHO ★', W * 0.50, H * 0.075);
-    // San go sang: van go ngang, xen ke 2 tong am (bat ke cap san, luon am nhu anh 2)
-    var plankH = 36;
-    for (var y = Math.floor(H * 0.16); y < H; y += plankH) {
-      var row = Math.floor((y - H * 0.16) / plankH);
-      ctx.fillStyle = row % 2 === 0 ? '#f0c98a' : '#e8b96f';
+    // 7.2: san go sac net — van ngang xen ke + moi noi van so le + van go
+    var plankH = 34;
+    var y0 = Math.floor(H * 0.16);
+    for (var y = y0; y < H; y += plankH) {
+      var row = Math.floor((y - y0) / plankH);
+      ctx.fillStyle = row % 2 === 0 ? '#f0c98a' : '#e6b46c';
       ctx.fillRect(0, y, W, plankH - 2);
-      ctx.fillStyle = 'rgba(146,64,14,0.18)';
+      ctx.fillStyle = 'rgba(146,64,14,0.22)';
       ctx.fillRect(0, y + plankH - 2, W, 2);
+      // Moi noi van so le nhau
+      var jointX = (row % 2 === 0) ? W * 0.32 : W * 0.68;
+      ctx.fillRect(jointX, y, 2, plankH - 2);
+      ctx.fillRect((jointX + W * 0.5) % W, y, 2, plankH - 2);
       // Van go nhe
       ctx.fillStyle = 'rgba(146,64,14,0.10)';
       ctx.fillRect((row * 211) % W, y + 8, W * 0.22, 3);
@@ -71,6 +88,54 @@
     ctx.fillRect(W * 0.1, H * 0.78, W * 0.8, 3);
   }
 
+  // 7.2: moi mon ve hinh dang rieng, sac net — khong con o mau chung chung.
+  function drawProductItem(ctx, p, i, cx, cy, w, h) {
+    var c = p.color, d = p.dark;
+    ctx.save();
+    ctx.translate(cx, cy);
+    if (p.id === 'veggie') { // bap cai xanh + la
+      ctx.fillStyle = '#22c55e'; ctx.beginPath(); ctx.arc(0, 1, h * 0.42, 0, 6.29); ctx.fill();
+      ctx.fillStyle = '#4ade80'; ctx.beginPath(); ctx.arc(-2, -1, h * 0.28, 0, 6.29); ctx.fill();
+      ctx.fillStyle = '#166534'; ctx.fillRect(-1, -h * 0.5, 2, 4);
+    } else if (p.id === 'fruit') { // tao / cam xen ke
+      ctx.fillStyle = (i % 2 === 0) ? '#ef4444' : '#f97316';
+      ctx.beginPath(); ctx.arc(0, 1, h * 0.42, 0, 6.29); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.55)'; ctx.beginPath(); ctx.arc(-3, -2, 2, 0, 6.29); ctx.fill();
+      ctx.fillStyle = '#78350f'; ctx.fillRect(-1, -h * 0.5, 2, 4);
+    } else if (p.id === 'noodle') { // goi mi vang, soc do
+      ctx.fillStyle = '#facc15'; ctx.fillRect(-w * 0.42, -h * 0.38, w * 0.84, h * 0.76);
+      ctx.fillStyle = '#dc2626'; ctx.fillRect(-w * 0.42, -2, w * 0.84, 4);
+      ctx.fillStyle = '#854d0e'; ctx.fillRect(-w * 0.42, h * 0.38 - 2, w * 0.84, 2);
+    } else if (p.id === 'bread') { // o banh mi nau
+      ctx.fillStyle = '#d97706';
+      ctx.beginPath(); ctx.ellipse(0, 0, w * 0.42, h * 0.36, 0, 0, 6.29); ctx.fill();
+      ctx.strokeStyle = '#92400e'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(-5, -4); ctx.lineTo(5, -4); ctx.moveTo(-5, 1); ctx.lineTo(5, 1); ctx.stroke();
+    } else if (p.id === 'milk') { // hop sua trang, mai xanh
+      ctx.fillStyle = '#ffffff'; ctx.fillRect(-w * 0.34, -h * 0.3, w * 0.68, h * 0.68);
+      ctx.fillStyle = '#0284c7';
+      ctx.beginPath(); ctx.moveTo(-w * 0.34, -h * 0.3); ctx.lineTo(0, -h * 0.5); ctx.lineTo(w * 0.34, -h * 0.3); ctx.closePath(); ctx.fill();
+      ctx.fillRect(-w * 0.34, h * 0.1, w * 0.68, 3);
+    } else if (p.id === 'drink') { // chai nuoc ngot
+      ctx.fillStyle = (i % 2 === 0) ? '#38bdf8' : '#22c55e';
+      ctx.fillRect(-w * 0.26, -h * 0.2, w * 0.52, h * 0.58);
+      ctx.fillRect(-w * 0.12, -h * 0.48, w * 0.24, h * 0.3);
+      ctx.fillStyle = '#dc2626'; ctx.fillRect(-w * 0.14, -h * 0.52, w * 0.28, 3);
+      ctx.fillStyle = 'rgba(255,255,255,0.5)'; ctx.fillRect(-w * 0.2, -h * 0.12, 2, h * 0.4);
+    } else if (p.id === 'candy') { // keo boc giay hong / tim
+      ctx.fillStyle = (i % 2 === 0) ? '#f472b6' : '#a78bfa';
+      ctx.beginPath(); ctx.arc(0, 0, h * 0.34, 0, 6.29); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(-h * 0.34, 0); ctx.lineTo(-h * 0.55, -4); ctx.lineTo(-h * 0.55, 4); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(h * 0.34, 0); ctx.lineTo(h * 0.55, -4); ctx.lineTo(h * 0.55, 4); ctx.closePath(); ctx.fill();
+    } else { // snack: tui tim, nhan vang
+      ctx.fillStyle = '#a78bfa'; ctx.fillRect(-w * 0.36, -h * 0.4, w * 0.72, h * 0.8);
+      ctx.fillStyle = '#facc15'; ctx.fillRect(-w * 0.22, -h * 0.14, w * 0.44, h * 0.3);
+      ctx.fillStyle = '#4c1d95'; ctx.fillRect(-w * 0.36, -h * 0.4, w * 0.72, 3);
+    }
+    ctx.restore();
+    void c; void d;
+  }
+
   function drawShelf(ctx, W, H, G, R, shelf, now) {
     var p = VST.DATA.PRODUCT_MAP[shelf.productId];
     var x = px(shelf.x, W), y = px(shelf.y, H), w = px(shelf.w, W), h = px(shelf.h, H);
@@ -79,22 +144,28 @@
     // Bong do
     ctx.fillStyle = 'rgba(0,0,0,0.20)';
     ctx.fillRect(x + 6, y + h + 4, w, 8);
-    // Than ke go nau am + vien tren vang (anh 2)
+    // 7.2: khung ke go sac net — cot 2 ben, vien tren vang, 4 tang ro rang
     ctx.fillStyle = '#8b5a2b'; ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = '#6b4226'; ctx.fillRect(x, y, 6, h); ctx.fillRect(x + w - 6, y, 6, h);
     ctx.fillStyle = '#a16207'; ctx.fillRect(x, y, w, 6);
     ctx.fillStyle = '#d97706'; ctx.fillRect(x, y + 6, w, 4);
     ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fillRect(x, y, w, 3);
-    // Hang hoa: o pixel theo so luong
-    var cols = 6, rows = 3, cw = w / cols, ch = (h - 22) / rows; // 7.1.1: 3 tang, nhieu mau hon
+    // Hang hoa: 4 tang x 8 cot, moi mon ve hinh rieng theo so luong
+    var cols = 8, rows = 4, cw = (w - 12) / cols, ch = (h - 28) / rows;
     var n = Math.round(pct * cols * rows);
     for (var i = 0; i < cols * rows; i++) {
-      var cx = x + (i % cols) * cw, cy = y + 8 + Math.floor(i / cols) * ch;
+      var col = i % cols, r = Math.floor(i / cols);
+      var cx = x + 6 + col * cw + cw / 2, cy = y + 10 + r * ch + ch / 2;
       if (i < n) {
-        var palette = [p.color, '#ef4444', '#f59e0b', '#4ade80', '#38bdf8', '#f472b6', '#a78bfa', '#facc15'];
-        ctx.fillStyle = palette[i % palette.length]; ctx.fillRect(cx + 3, cy + 3, cw - 6, ch - 6);
-        ctx.fillStyle = p.dark; ctx.fillRect(cx + 3, cy + ch - 9, cw - 6, 4);
+        drawProductItem(ctx, p, i, cx, cy, cw - 5, ch - 4);
       } else {
-        ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(cx + 3, cy + 3, cw - 6, ch - 6);
+        ctx.fillStyle = 'rgba(0,0,0,0.22)';
+        ctx.fillRect(cx - (cw - 6) / 2, cy - (ch - 5) / 2, cw - 6, ch - 5);
+      }
+      // Van go ngan tang (chi ve sau hang cuoi moi tang)
+      if (col === cols - 1) {
+        ctx.fillStyle = '#a16207'; ctx.fillRect(x + 6, y + 10 + (r + 1) * ch - 2, w - 12, 3);
+        ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.fillRect(x + 6, y + 10 + (r + 1) * ch - 2, w - 12, 1);
       }
     }
     // Nhan gia + ten
@@ -132,13 +203,25 @@
     ctx.fillStyle = 'rgba(0,0,0,0.20)';
     ctx.beginPath(); ctx.ellipse(x, y + 26, 46, 10, 0, 0, 6.29); ctx.fill();
     if (kind === 'pos') {
-      // Quay tinh tien go (anh 2: quay go ben phai, thu ngan mu vang dung sau)
+      // 7.2: quay tinh tien go sac net — mat quay, bang chuyen, may tinh tien co man hinh
       ctx.fillStyle = '#8b5a2b'; ctx.fillRect(x - 52, y - 30, 104, 55);
+      ctx.fillStyle = '#6b4226'; ctx.fillRect(x - 52, y + 18, 104, 7);
       ctx.fillStyle = '#d97706'; ctx.fillRect(x - 52, y - 30, 104, 8);
-      ctx.fillStyle = '#fde68a'; ctx.fillRect(x - 52, y + 18, 104, 7);
-      ctx.fillStyle = '#fff7e6'; ctx.font = 'bold 15px system-ui'; ctx.textAlign = 'center';
-      ctx.fillText('💰 POS', x, y - 8);
-      ctx.fillStyle = '#fde68a'; ctx.fillText('Tinh tien', x, y + 12);
+      ctx.fillStyle = 'rgba(255,255,255,0.3)'; ctx.fillRect(x - 52, y - 30, 104, 3);
+      // Bang chuyen den co vach trang
+      ctx.fillStyle = '#334155'; ctx.fillRect(x - 48, y - 20, 96, 10);
+      ctx.fillStyle = '#e2e8f0';
+      for (var bi = 0; bi < 6; bi++) ctx.fillRect(x - 44 + bi * 16, y - 18, 6, 6);
+      // May tinh tien: than + man hinh xanh + nut
+      ctx.fillStyle = '#1f2937'; ctx.fillRect(x + 14, y - 46, 30, 22);
+      ctx.fillStyle = '#38bdf8'; ctx.fillRect(x + 17, y - 43, 24, 11);
+      ctx.fillStyle = '#facc15'; ctx.fillRect(x + 17, y - 29, 6, 4);
+      ctx.fillStyle = '#4ade80'; ctx.fillRect(x + 26, y - 29, 6, 4);
+      ctx.fillStyle = '#ef4444'; ctx.fillRect(x + 35, y - 29, 6, 4);
+      // Tui hang + bien
+      ctx.fillStyle = '#fff7e6'; ctx.font = 'bold 14px system-ui'; ctx.textAlign = 'center';
+      ctx.fillText('💰 POS', x - 22, y - 6);
+      ctx.fillStyle = '#fde68a'; ctx.fillText('Tinh tien', x - 22, y + 12);
       var q = R.customers.filter(function (c) { return c.state === 'queue'; }).length;
       if (q > 0) { ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(x + 40, y - 28, 13, 0, 6.29); ctx.fill(); ctx.fillStyle = '#fff'; ctx.fillText(String(q), x + 40, y - 28); }
     } else if (kind === 'coffee') {
@@ -172,7 +255,7 @@
       var col = moving ? (c.walkFrame || 0) : 1; // khung 1 = dung yen
       // Sheet khach nu: khung 3 hang trai bi ve nham sang phai -> dung khung 2 thay the
       if (key === 'customer' && row === 1 && col === 3) col = 2;
-      if (drawSpriteFrame(ctx, img, col, row, x, y + 26 + bob, 78, 78)) { // 7.1.1: to hon 25%
+      if (drawSpriteFrame(ctx, img, col, row, x, y + 26 + bob, 90, 90)) { // 7.2: to hon 15% so voi 7.1.3 (78px), man ngang rong hon
         // Nhan / thanh kien nhan / cam xuc van ve them ben tren sprite
         if (!isManager && c.type) {
           var t2 = VST.DATA.CUSTOMER_TYPES[c.type];
@@ -226,27 +309,68 @@
     }
   }
 
+  function drawFruitPile(ctx, cx, cy, r, color, kind) {
+    // 1 dong trai cay: hinh dang rieng theo loai (tron / chuoi / ca rot / sup lo)
+    var i, a;
+    if (kind === 'banana') {
+      ctx.strokeStyle = '#facc15'; ctx.lineWidth = 5; ctx.lineCap = 'round';
+      for (i = 0; i < 3; i++) {
+        ctx.beginPath(); ctx.arc(cx, cy + 4, r - 2, Math.PI * (1.15 + i * 0.12), Math.PI * (1.85 - i * 0.12)); ctx.stroke();
+      }
+      return;
+    }
+    if (kind === 'carrot') {
+      for (i = 0; i < 3; i++) {
+        ctx.fillStyle = '#f97316';
+        ctx.beginPath(); ctx.moveTo(cx - 8 + i * 8, cy - 6); ctx.lineTo(cx - 4 + i * 8, cy + 8); ctx.lineTo(cx + i * 8, cy - 6); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#22c55e'; ctx.fillRect(cx - 6 + i * 8, cy - 12, 5, 6);
+      }
+      return;
+    }
+    if (kind === 'broccoli') {
+      ctx.fillStyle = '#16a34a';
+      for (i = 0; i < 5; i++) {
+        a = i * 1.256;
+        ctx.beginPath(); ctx.arc(cx + Math.cos(a) * r * 0.45, cy + Math.sin(a) * r * 0.3, r * 0.34, 0, 6.29); ctx.fill();
+      }
+      ctx.fillStyle = '#4ade80'; ctx.beginPath(); ctx.arc(cx, cy - 2, r * 0.3, 0, 6.29); ctx.fill();
+      return;
+    }
+    // Tao / cam / nho: chum tron co diem sang
+    for (i = 0; i < 7; i++) {
+      a = i * 0.9;
+      ctx.fillStyle = color;
+      ctx.beginPath(); ctx.arc(cx + Math.cos(a) * r * 0.5, cy + Math.sin(a) * r * 0.32, r * 0.3, 0, 6.29); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.5)';
+      ctx.beginPath(); ctx.arc(cx + Math.cos(a) * r * 0.5 - 2, cy + Math.sin(a) * r * 0.32 - 2, r * 0.1, 0, 6.29); ctx.fill();
+    }
+  }
+
   function drawFruitStall(ctx, W, H, G, now) {
-    // Quay rau cu tron o giua san (anh 2) — trang tri, o khoang trong giua 2 hang ke va tram
-    loadExtra();
+    // 7.2: quay rau cu tron ve tay, sac net — ban go tron, 6 dong trai cay rieng biet.
+    // Hinh hoc khop va cham ellipse o game.js (hitsStall): tam (50%, 68%), rong 210, cao 118.
     var cx = W * 0.50, cy = H * 0.68, rw = 210, rh = 118;
     ctx.fillStyle = 'rgba(0,0,0,0.18)';
     ctx.beginPath(); ctx.ellipse(cx, cy + rh / 2 + 6, rw / 2 + 8, 12, 0, 0, 6.29); ctx.fill();
-    var simg = extraImgs['stall'];
-    if (spriteReady(simg)) {
-      ctx.fillStyle = '#8b5a2b'; ctx.fillRect(cx - rw / 2 - 6, cy - rh / 2 - 6, rw + 12, rh + 12);
-      try { ctx.drawImage(simg, cx - rw / 2, cy - rh / 2, rw, rh); } catch (e) {}
-    } else {
-      // Fallback: ban go tron + 3 dong trai cay
-      ctx.fillStyle = '#8b5a2b'; ctx.beginPath(); ctx.ellipse(cx, cy, rw / 2, rh / 2, 0, 0, 6.29); ctx.fill();
-      var fruits = ['#ef4444', '#facc15', '#f97316', '#4ade80'];
-      for (var i = 0; i < 12; i++) {
-        ctx.fillStyle = fruits[i % fruits.length];
-        ctx.beginPath(); ctx.arc(cx - 80 + (i % 6) * 32, cy - 26 + Math.floor(i / 6) * 34, 12, 0, 6.29); ctx.fill();
-      }
-    }
-    ctx.fillStyle = '#92400e'; ctx.font = 'bold 15px system-ui'; ctx.textAlign = 'center';
-    ctx.fillText('🍎🍌🥕 Quay rau cu', cx, cy + rh / 2 + 22);
+    // Ban go tron 2 lop + vien vang
+    ctx.fillStyle = '#6b4226'; ctx.beginPath(); ctx.ellipse(cx, cy + 6, rw / 2 + 4, rh / 2 + 4, 0, 0, 6.29); ctx.fill();
+    ctx.fillStyle = '#8b5a2b'; ctx.beginPath(); ctx.ellipse(cx, cy, rw / 2, rh / 2, 0, 0, 6.29); ctx.fill();
+    ctx.fillStyle = '#a16207'; ctx.beginPath(); ctx.ellipse(cx, cy, rw / 2 - 8, rh / 2 - 8, 0, 0, 6.29); ctx.fill();
+    // 6 dong: tao do, cam, chuoi, nho tim, sup lo xanh, ca rot
+    var piles = [
+      { dx: -68, dy: -22, r: 17, color: '#ef4444', kind: 'round' },
+      { dx: -24, dy: -30, r: 17, color: '#f97316', kind: 'round' },
+      { dx: 20, dy: -30, r: 17, color: '#facc15', kind: 'banana' },
+      { dx: 66, dy: -22, r: 16, color: '#7c3aed', kind: 'round' },
+      { dx: -46, dy: 16, r: 18, color: '#16a34a', kind: 'broccoli' },
+      { dx: 8, dy: 14, r: 18, color: '#f97316', kind: 'carrot' },
+      { dx: 58, dy: 14, r: 15, color: '#facc15', kind: 'round' }
+    ];
+    piles.forEach(function (pl) { drawFruitPile(ctx, cx + pl.dx, cy + pl.dy, pl.r, pl.color, pl.kind); });
+    // Bien go nho phia truoc quay
+    ctx.fillStyle = '#92400e'; ctx.fillRect(cx - 62, cy + rh / 2 - 2, 124, 20);
+    ctx.fillStyle = '#fde68a'; ctx.font = 'bold 13px system-ui'; ctx.textAlign = 'center';
+    ctx.fillText('🍎 Quay rau cu 🥕', cx, cy + rh / 2 + 12);
   }
 
   function drawTruck(ctx, W, H, G, now) {
@@ -292,6 +416,12 @@
       g1.addColorStop(0, 'rgba(250,204,21,0.25)'); g1.addColorStop(1, 'rgba(250,204,21,0)');
       ctx.fillStyle = g1; ctx.fillRect(0, 0, W, H);
     }
+    // 7.2: 2 vung sang am tu den tran roi xuong san (kieu anh xem truoc man ngang)
+    [[0.30, 0.30], [0.70, 0.30]].forEach(function (pt) {
+      var lg = ctx.createRadialGradient(W * pt[0], H * pt[1], 10, W * pt[0], H * pt[1], 240);
+      lg.addColorStop(0, 'rgba(253,230,138,0.10)'); lg.addColorStop(1, 'rgba(253,230,138,0)');
+      ctx.fillStyle = lg; ctx.fillRect(0, 0, W, H);
+    });
     // Vet nang tu cua
     ctx.fillStyle = 'rgba(255,255,255,0.08)';
     ctx.beginPath();
@@ -353,7 +483,7 @@
     if (G.staff && G.staff.cashier && G.staff.cashier.hired) {
       loadSprites();
       var cimg = sprites['cashier_idle'];
-      if (spriteReady(cimg)) { ctx.drawImage(cimg, W * 0.82 - 30, H * 0.70 - 60, 60, 60); }
+      if (spriteReady(cimg)) { ctx.drawImage(cimg, W * 0.82 - 34, H * 0.70 - 68, 68, 68); }
     }
     var actors = R.customers.slice();
     actors.sort(function (a, b) { return a.y - b.y; });
