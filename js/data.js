@@ -1,4 +1,4 @@
-/* Vua Sieu Thi Pho — PWA v7.2 | js/data.js
+/* Vua Sieu Thi Pho — PWA v7.3 | js/data.js
    Du lieu tinh: san pham, chuong, nang cap, khach, nhan vien, nhiem vu, thanh tuu.
    Khong chua logic choi. Giu lai can bang goc ban 6.1/6.2:
    - Chuong 1: targetCash 4.800.000, targetStar 3.5
@@ -150,16 +150,27 @@
 
   // Sprite sheet dang di 4 cot x 2 hang (hang 0: sang phai, hang 1: sang trai),
   // moi khung 256x256, doi khung moi 120ms khi di, khung 1 = dung yen.
+  // 7.3: them khach 2 (ong gia) + khach 3 (tre em) tu goi asset.
   var SPRITES = {
     manager:  { src: './assets/sprites/walk-manager.png',   idle: './assets/sprites/walk-idle-manager.png',   cols: 4, rows: 2, frameMs: 120 },
     cashier:  { src: './assets/sprites/walk-cashier.png',   idle: './assets/sprites/walk-idle-cashier.png',   cols: 4, rows: 2, frameMs: 120 },
-    customer: { src: './assets/sprites/walk-customer1.png', idle: './assets/sprites/walk-idle-customer1.png', cols: 4, rows: 2, frameMs: 120 }
+    customer: { src: './assets/sprites/walk-customer1.png', idle: './assets/sprites/walk-idle-customer1.png', cols: 4, rows: 2, frameMs: 120 },
+    customer2: { src: './assets/sprites/walk-customer2.png', idle: './assets/sprites/walk-idle-customer2.png', cols: 4, rows: 2, frameMs: 120 },
+    customer3: { src: './assets/sprites/walk-customer3.png', idle: './assets/sprites/walk-idle-customer3.png', cols: 4, rows: 2, frameMs: 120 }
+  };
+  // Loai khach -> sprite: tre em dung khach 3, nguoi gia dung khach 2, con lai khach 1.
+  var CUSTOMER_SPRITE_BY_TYPE = { kid: 'customer3', elder: 'customer2' };
+  // Anh phu 7.3: xe day (ve duoi khach dang mua), tu lanh (the nang cap).
+  var IMAGES = {
+    cart: './assets/img/cart-shopping.png',
+    fridge: './assets/img/shelf-fridge.jpg'
   };
   // Icon san pham (anh that, da tach nen, 256px). Mon nao chua co icon thi dung emoji.
+  // 7.3: du icon ca 8 mon (them mi goi + nuoc ngot).
   var PRODUCT_ICONS = {
     veggie: './assets/img/icon-carrot.png', fruit: './assets/img/icon-apple.png',
-    noodle: null, bread: './assets/img/icon-bread.png', milk: './assets/img/icon-milk.png',
-    drink: null, candy: './assets/img/icon-snack.png', snack: './assets/img/icon-snack.png'
+    noodle: './assets/img/icon-noodle.png', bread: './assets/img/icon-bread.png', milk: './assets/img/icon-milk.png',
+    drink: './assets/img/icon-drink.png', candy: './assets/img/icon-snack.png', snack: './assets/img/icon-snack.png'
   };
 
   VST.DATA = {
@@ -167,6 +178,7 @@
     CHAPTERS: CHAPTERS, CHAPTER_MAP: CHAPTER_MAP, FLOORS: FLOORS, WALLS: WALLS,
     UPGRADES: UPGRADES, CUSTOMER_TYPES: CUSTOMER_TYPES, STAFF_TYPES: STAFF_TYPES,
     MISSION_POOL: MISSION_POOL, ACHIEVEMENTS: ACHIEVEMENTS, DIFFICULTIES: DIFFICULTIES,
-    WEATHERS: WEATHERS, SPRITES: SPRITES, PRODUCT_ICONS: PRODUCT_ICONS
+    WEATHERS: WEATHERS, SPRITES: SPRITES, PRODUCT_ICONS: PRODUCT_ICONS,
+    CUSTOMER_SPRITE_BY_TYPE: CUSTOMER_SPRITE_BY_TYPE, IMAGES: IMAGES
   };
 })();

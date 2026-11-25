@@ -1,9 +1,9 @@
-/* Vua Sieu Thi Pho — PWA v7.2 | js/render.js
+/* Vua Sieu Thi Pho — PWA v7.3 | js/render.js
    Visual 7.2 (theo anh xem truoc man ngang da chot): sieu thi ngang rong,
    ke go 4 tang sac net, moi mon ve hinh dang rieng; san go co moi noi van;
    cua kinh rong phia sau, quay rau cu tron ve tay o giua san (co va cham),
    quay POS go co may tinh tien; nhan vat 90px. Engine van 2D. */
-/* Vua Sieu Thi Pho — PWA v7.2 | js/render.js
+/* Vua Sieu Thi Pho — PWA v7.3 | js/render.js
    Ve bang sprite sheet dang di 4x2 (quan ly / thu ngan / khach), doi khung 120ms;
    neu anh chua tai xong thi dung fallback pixel + chan gia lap.
    Goc: ve pixel art bang canvas 1280x720, nen theo san/tuong, ke hang,
@@ -14,6 +14,7 @@
   function px(v, total) { return v / 100 * total; }
   // --- Sprite sheet dang di (load luoi, khong block game) ---
   var sprites = {}, spritesTried = false;
+  var extras = {}; // anh phu 7.3 (xe day...), load luoi nhu sprite
   function loadSprites() {
     if (spritesTried || typeof Image === 'undefined' || !VST.DATA || !VST.DATA.SPRITES) return;
     spritesTried = true;
@@ -22,6 +23,10 @@
       var img = new Image(); img.src = cfg.src; sprites[k] = img;
       var idl = new Image(); idl.src = cfg.idle; sprites[k + '_idle'] = idl;
     });
+    // 7.3: xe day cho khach dang mua
+    if (VST.DATA.IMAGES && VST.DATA.IMAGES.cart && !extras.cart) {
+      var cart = new Image(); cart.src = VST.DATA.IMAGES.cart; extras.cart = cart;
+    }
   }
   function spriteReady(img) { return !!(img && img.complete && img.naturalWidth > 0); }
   function drawSpriteFrame(ctx, img, frame, row, x, y, w, h) {
@@ -168,6 +173,15 @@
         ctx.fillStyle = 'rgba(255,255,255,0.25)'; ctx.fillRect(x + 6, y + 10 + (r + 1) * ch - 2, w - 12, 1);
       }
     }
+    // 7.3: ke lanh (sua / nuoc ngot) co lop kinh mo + vien trang + bong tuyet
+    if (p.fridge) {
+      ctx.fillStyle = 'rgba(186,230,253,0.20)';
+      ctx.fillRect(x + 6, y + 10, w - 12, h - 28);
+      ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.lineWidth = 2;
+      ctx.strokeRect(x + 6, y + 10, w - 12, h - 28);
+      ctx.fillStyle = '#0c4a6e'; ctx.font = 'bold 13px system-ui'; ctx.textAlign = 'right';
+      ctx.fillText('❄', x + w - 10, y + 24);
+    }
     // Nhan gia + ten
     ctx.fillStyle = '#fff8e7'; ctx.fillRect(x, y + h - 18, w, 18);
     ctx.fillStyle = '#111827'; ctx.font = 'bold ' + Math.round(H * 0.018) + 'px system-ui';
@@ -248,13 +262,20 @@
     ctx.beginPath(); ctx.ellipse(x, y + 28, moving ? 20 : 24, 7, 0, 0, 6.29); ctx.fill();
     // --- Duong sprite sheet that (uu tien) ---
     var useSprite = G && G.settings && G.settings.walkAnim !== false;
-    var key = isManager ? 'manager' : 'customer';
+    // 7.3: khach tre em / nguoi gia dung sprite rieng, con lai dung khach 1
+    var key = isManager ? 'manager' : ((VST.DATA.CUSTOMER_SPRITE_BY_TYPE || {})[c.type] || 'customer');
     var img = sprites[key];
     if (useSprite && spriteReady(img)) {
       var row = (c.dir === 'left') ? 1 : 0; // len/xuong dung hang phai
       var col = moving ? (c.walkFrame || 0) : 1; // khung 1 = dung yen
       // Sheet khach nu: khung 3 hang trai bi ve nham sang phai -> dung khung 2 thay the
+      // (chi ap dung khach 1; sheet khach 2/3 ve dung huong)
       if (key === 'customer' && row === 1 && col === 3) col = 2;
+      // 7.3: xe day cho khach dang mua / xep hang — ve truoc nguoi, lech ve huong di
+      if (!isManager && (c.state === 'browse' || c.state === 'queue') && spriteReady(extras.cart)) {
+        var cdx = (c.dir === 'left') ? -36 : 36;
+        ctx.drawImage(extras.cart, x + cdx - 28, y - 4 + bob, 56, 41);
+      }
       if (drawSpriteFrame(ctx, img, col, row, x, y + 26 + bob, 90, 90)) { // 7.2: to hon 15% so voi 7.1.3 (78px), man ngang rong hon
         // Nhan / thanh kien nhan / cam xuc van ve them ben tren sprite
         if (!isManager && c.type) {
@@ -497,5 +518,5 @@
     ctx.fillText('Ngay ' + G.day + '  •  ' + U.fmtTime(R.minuteOfDay), W - 99, 28);
   }
 
-  VST.render = { render: render, drawShelf: drawShelf, drawPerson: drawPerson, loadSprites: loadSprites, sprites: sprites, spriteReady: spriteReady };
+  VST.render = { render: render, drawShelf: drawShelf, drawPerson: drawPerson, loadSprites: loadSprites, sprites: sprites, extras: extras, spriteReady: spriteReady };
 })();

@@ -1,11 +1,11 @@
-/* Vua Sieu Thi Pho — PWA v7.2 | js/state.js
+/* Vua Sieu Thi Pho — PWA v7.3 | js/state.js
    State ben vung + save/load an toan (deep-merge, validate, version).
    Ke thua fix 6.1: khong dung Object.assign nong, save thieu truong long
    nhau thi dien mac dinh, frostTimer NaN thi sua ve 25. */
 (function () {
   var VST = window.VST || (window.VST = {});
   var SAVE_KEY = 'vua-sieu-thi-pwa-v7';
-  var SAVE_VERSION = '7.2'; // SAVE_KEY giu 'vua-sieu-thi-pwa-v7' de doc save 7.0/7.1/7.1.2/7.1.3
+  var SAVE_VERSION = '7.3'; // SAVE_KEY giu 'vua-sieu-thi-pwa-v7' de doc save 7.0/7.1/7.1.2/7.1.3/7.2
 
   function isNum(v) { return typeof v === 'number' && isFinite(v); }
   function num(v, d) { return isNum(v) ? v : d; }

@@ -1,4 +1,4 @@
-/* Vua Sieu Thi Pho — PWA v7.2 | js/ui.js
+/* Vua Sieu Thi Pho — PWA v7.3 | js/ui.js
    HUD, bottom-nav, modal, toast, man hinh bat dau, P&L cuoi ngay.
    Them: cai dat day du (joystick/D-pad/dang di), confirm modal, huong dan 3 buoc. */
 (function () {
@@ -20,10 +20,11 @@
     var g = G(); if (!g) return;
     var set = function (id, v) { var e = el(id); if (e) e.textContent = v; };
     set('hudCash', U.fmtMoney(g.cash));
-    set('hudStars', '★ ' + g.stars.toFixed(1));
+    // 7.3: sao/xu hien bang anh (hudStarsNum/hudCoinsNum); giu fallback text neu HTML cu
+    if (el('hudStarsNum')) set('hudStarsNum', g.stars.toFixed(1)); else set('hudStars', '★ ' + g.stars.toFixed(1));
     set('hudDay', 'Ngay ' + g.day + ' • Chuong ' + g.chapterId + (g.freeMode ? ' • Tu Do' : ''));
     set('hudStamina', '⚡ ' + Math.round(g.stamina) + '%');
-    set('hudCoins', '🪙 ' + g.coins);
+    if (el('hudCoinsNum')) set('hudCoinsNum', String(g.coins)); else set('hudCoins', '🪙 ' + g.coins);
     set('hudWeather', (VST.DATA.WEATHERS[g.weather] || {}).icon + ' ' + (VST.DATA.WEATHERS[g.weather] || {}).name);
     var bar = el('staminaBar'); if (bar) { bar.style.width = g.stamina + '%'; bar.style.background = g.stamina < 30 ? '#ef4444' : g.stamina < 60 ? '#facc15' : '#4ade80'; }
     var sb = el('shipperBadge');
@@ -213,7 +214,9 @@
       var up = d.UPGRADES[k];
       var cur = k === 'sign' ? g.signLevel : g[k + 'Level'];
       var next = up.levels.find(function (l) { return l.level === cur + 1; });
-      h += '<div class="stock-row"><span><b>' + up.name + '</b> — cap ' + cur + '</span>'
+      // 7.3: the Tu Lanh co anh tu lanh that
+      var upImg = (k === 'fridge' && d.IMAGES && d.IMAGES.fridge) ? '<img class="upg-img" src="' + d.IMAGES.fridge + '" alt=""> ' : '';
+      h += '<div class="stock-row"><span>' + upImg + '<b>' + up.name + '</b> — cap ' + cur + '</span>'
         + (next ? '<button class="btn small gold" onclick="VST.game.buyUpgrade(\'' + k + '\');VST.ui.renderModal(\'chapters\')">Len cap ' + next.level + ' (' + U.fmtMoney(next.price) + ')</button>' : '<span>MAX</span>') + '</div>';
     });
     return h;

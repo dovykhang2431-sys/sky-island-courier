@@ -1,4 +1,4 @@
-/* Vua Sieu Thi Pho — PWA v7.2 | js/game.js
+/* Vua Sieu Thi Pho — PWA v7.3 | js/game.js
    Vong choi: ngay 7:00-22:00, khach, checkout, len ke, dat si, shipper,
    ca phe, su co, thoi tiet, sao, tien dien, cuoi ngay P&L.
    Ke thua fix 6.1: pause khi mo modal, checkout het hang doi o POS,

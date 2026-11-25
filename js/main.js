@@ -1,4 +1,4 @@
-/* Vua Sieu Thi Pho — PWA v7.2 | js/main.js
+/* Vua Sieu Thi Pho — PWA v7.3 | js/main.js
    Khoi tao, game loop, input (phim giu / joystick / D-pad / pointer), resize/DPR,
    dang ky Service Worker, install prompt, luu khi tat tab. */
 (function () {

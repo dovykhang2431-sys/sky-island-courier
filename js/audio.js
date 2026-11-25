@@ -1,4 +1,4 @@
-/* Vua Sieu Thi Pho — PWA v7.2 | js/audio.js
+/* Vua Sieu Thi Pho — PWA v7.3 | js/audio.js
    Am thanh tu sinh bang WebAudio, khong file ngoai. Nhac nen nhe (vong hop am). */
 (function () {
   var VST = window.VST || (window.VST = {});

@@ -1,5 +1,5 @@
-/* Vua Sieu Thi Pho — PWA v7.2 | sw.js — cache-first, offline ve index.html */
-var CACHE = 'vua-sieu-thi-v7.2';
+/* Vua Sieu Thi Pho — PWA v7.3 | sw.js — cache-first, offline ve index.html */
+var CACHE = 'vua-sieu-thi-v7.3';
 var ASSETS = [
   './',
   './index.html',
@@ -19,9 +19,13 @@ var ASSETS = [
   './assets/sprites/walk-manager.png',
   './assets/sprites/walk-cashier.png',
   './assets/sprites/walk-customer1.png',
+  './assets/sprites/walk-customer2.png',
+  './assets/sprites/walk-customer3.png',
   './assets/sprites/walk-idle-manager.png',
   './assets/sprites/walk-idle-cashier.png',
   './assets/sprites/walk-idle-customer1.png',
+  './assets/sprites/walk-idle-customer2.png',
+  './assets/sprites/walk-idle-customer3.png',
   './assets/img/bg-store.jpg',
   './assets/img/icon-apple.png',
   './assets/img/icon-banana.png',
@@ -29,6 +33,13 @@ var ASSETS = [
   './assets/img/icon-milk.png',
   './assets/img/icon-bread.png',
   './assets/img/icon-snack.png',
+  './assets/img/icon-noodle.png',
+  './assets/img/icon-drink.png',
+  './assets/img/ui-coin.png',
+  './assets/img/ui-star.png',
+  './assets/img/cart-shopping.png',
+  './assets/img/shelf-fridge.jpg',
+  './assets/img/portrait-manager.png',
   './assets/img/shelf-groceries.jpg',
   './assets/img/stall-fruit.jpg',
   './assets/img/counter-pos.jpg',
